@@ -149,9 +149,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       console.log("Sign out successful");
       // Navigation will happen via the auth state change listener
+      
+      // Reset the auth state explicitly
+      setUser(null);
+      setSession(null);
+      
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast.error(error.message || "Failed to sign out");
+      throw error;
     } finally {
       setIsLoading(false);
     }

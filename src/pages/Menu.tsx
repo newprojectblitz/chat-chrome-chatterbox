@@ -17,7 +17,9 @@ const Menu = () => {
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
+      console.log("Attempting to sign out from Menu");
       await signOut();
+      // Note: Navigation will now happen via the auth state change listener in AuthContext
     } catch (error) {
       console.error("Failed to sign out:", error);
       toast.error("Failed to sign out. Please try again.");
@@ -78,7 +80,6 @@ const Menu = () => {
               <button 
                 onClick={handleSignOut} 
                 className="retro-button flex items-center gap-2 flex-1 justify-center"
-                disabled={isLoading}
               >
                 <LogOut className="w-5 h-5" />
                 {isLoading ? 'Signing Out...' : 'Log Out'}
