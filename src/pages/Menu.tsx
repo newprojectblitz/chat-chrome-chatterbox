@@ -1,8 +1,10 @@
 
-import { Link, Navigate } from 'react-router-dom';
-import { Volleyball, Tv, Award, Trophy, LogOut, UserCircle } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
+import { Volleyball, Tv, Award, Trophy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from '@/components/ui/sonner';
+import { MenuHeader } from '@/components/menu/MenuHeader';
+import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
   const { user, signOut, isLoading } = useAuth();
@@ -49,42 +51,12 @@ const Menu = () => {
             </span>
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {channels.map((channel) => {
-                const Icon = channel.icon;
-                return (
-                  <Link 
-                    key={channel.id}
-                    to={`/chat/${channel.id}`}
-                    className="retro-button flex items-center gap-2 p-4 hover:shadow-[inset_1px_1px_#7F7F7F]"
-                  >
-                    <Icon className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="font-bold">{channel.name}</div>
-                      <div className="text-sm text-gray-600">{channel.type}</div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-            
-            <div className="mt-8 flex gap-2">
-              <Link 
-                to="/profile" 
-                className="retro-button flex items-center gap-2 flex-1 justify-center"
-              >
-                <UserCircle className="w-5 h-5" />
-                My Profile
-              </Link>
-              
-              <button 
-                onClick={handleSignOut} 
-                className="retro-button flex items-center gap-2 flex-1 justify-center"
-              >
-                <LogOut className="w-5 h-5" />
-                {isLoading ? 'Signing Out...' : 'Log Out'}
-              </button>
-            </div>
+            <ChannelList channels={channels} />
+            <MenuHeader 
+              username={user.email?.split('@')[0] || ''}
+              onSignOut={handleSignOut}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>
