@@ -8,18 +8,20 @@ import { useToast } from '@/components/ui/use-toast';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { signInWithEmail, signInWithGoogle, signUp } = useAuth();
+  const { signInWithCredentials, signInWithGoogle, signUp } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (isLogin) {
-        await signInWithEmail(email, password);
+        await signInWithCredentials(identifier, password);
       } else {
-        await signUp(email, password);
+        await signUp(email, password, username);
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link.",
@@ -42,16 +44,39 @@ const Auth = () => {
             <span>TrashTok {isLogin ? 'Login' : 'Sign Up'}</span>
           </div>
           <form onSubmit={handleSubmit} className="p-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            {isLogin ? (
+              <div className="space-y-2">
+                <Label htmlFor="identifier">Email or Username</Label>
+                <Input
+                  id="identifier"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -74,7 +99,13 @@ const Auth = () => {
             </Button>
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setIdentifier('');
+                setEmail('');
+                setUsername('');
+                setPassword('');
+              }}
               className="w-full text-sm text-gray-600 hover:text-gray-900"
             >
               {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}

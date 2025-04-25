@@ -15,21 +15,21 @@ export type Database = {
           created_at: string | null
           id: string
           updated_at: string | null
-          username: string | null
+          username: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
           id: string
           updated_at?: string | null
-          username?: string | null
+          username: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
           id?: string
           updated_at?: string | null
-          username?: string | null
+          username?: string
         }
         Relationships: []
       }
@@ -38,7 +38,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_id_by_username: {
+        Args: { lookup_username: string }
+        Returns: string
+      }
+      is_email: {
+        Args: { str: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
