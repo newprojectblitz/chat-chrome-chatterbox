@@ -21,37 +21,39 @@ export const MessageList = () => {
       ) : (
         <div className="space-y-2">
           {messages.map((message) => (
-            <div key={message.id} className="p-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-bold whitespace-nowrap">{message.sender}:</span>
-                  <span
-                    style={{
-                      fontFamily: message.font === 'comic' ? 'Comic Neue' :
-                                message.font === 'typewriter' ? 'Courier New' :
-                                'system-ui',
-                      color: message.color
-                    }}
-                    className="truncate"
-                  >
-                    {message.text}
-                  </span>
-                  <div className="flex items-center">
-                    <button 
-                      onClick={() => handleReaction(message.id, 'like')}
-                      className="p-1 hover:bg-gray-200 rounded flex items-center"
-                    >
-                      <ThumbsUp className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleReaction(message.id, 'dislike')}
-                      className="p-1 hover:bg-gray-200 rounded flex items-center ml-2"
-                    >
-                      <ThumbsDown className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap">
+            <div key={message.id} className="flex items-center gap-2">
+              <span className="font-bold whitespace-nowrap">{message.sender}:</span>
+              <span
+                style={{
+                  fontFamily: message.font === 'comic' ? 'Comic Neue' :
+                            message.font === 'typewriter' ? 'Courier New' :
+                            'system-ui',
+                  color: message.color,
+                  fontWeight: message.isBold ? 'bold' : 'normal',
+                  fontStyle: message.isItalic ? 'italic' : 'normal',
+                  textDecoration: message.isUnderline ? 'underline' : 'none',
+                  fontSize: message.fontSize === 'small' ? '0.875rem' : 
+                           message.fontSize === 'large' ? '1.125rem' : 
+                           '1rem'
+                }}
+                className="flex-1"
+              >
+                {message.text}
+              </span>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => handleReaction(message.id, 'like')}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => handleReaction(message.id, 'dislike')}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-gray-400">
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </span>
               </div>
