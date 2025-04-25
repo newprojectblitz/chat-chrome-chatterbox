@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Menu from "./pages/Menu";
 import Profile from "./pages/Profile";
+import DirectMessages from "./pages/DirectMessages";
 import { ChatProvider } from "./context/ChatContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/menu" element={<Menu />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/chat/:channelId" element={<Index />} />
+              <Route path="/direct-messages/:friendId" element={<DirectMessages />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

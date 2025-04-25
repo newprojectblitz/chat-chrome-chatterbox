@@ -21,7 +21,7 @@ export const MessageList = () => {
       ) : (
         <div className="space-y-2">
           {messages.map((message) => (
-            <div key={message.id} className="p-2 retro-inset bg-gray-50">
+            <div key={message.id} className="p-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-bold whitespace-nowrap">{message.sender}:</span>
@@ -36,25 +36,24 @@ export const MessageList = () => {
                   >
                     {message.text}
                   </span>
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => handleReaction(message.id, 'like')}
+                      className="p-1 hover:bg-gray-200 rounded flex items-center"
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleReaction(message.id, 'dislike')}
+                      className="p-1 hover:bg-gray-200 rounded flex items-center ml-2"
+                    >
+                      <ThumbsDown className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <span className="text-xs text-gray-400 whitespace-nowrap">
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </span>
-              </div>
-              
-              <div className="flex justify-end mt-1">
-                <button 
-                  onClick={() => handleReaction(message.id, 'like')}
-                  className="p-1 hover:bg-gray-200 rounded flex items-center"
-                >
-                  <ThumbsUp className="w-4 h-4 mr-1" />
-                </button>
-                <button 
-                  onClick={() => handleReaction(message.id, 'dislike')}
-                  className="p-1 hover:bg-gray-200 rounded flex items-center ml-2"
-                >
-                  <ThumbsDown className="w-4 h-4 mr-1" />
-                </button>
               </div>
             </div>
           ))}

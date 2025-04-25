@@ -10,6 +10,8 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileSettings } from '@/components/profile/ProfileSettings';
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { PasswordSettings } from '@/components/profile/PasswordSettings';
+import { FanPreferences } from '@/components/profile/FanPreferences';
+import { FriendsList } from '@/components/profile/FriendsList';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -19,10 +21,25 @@ const Profile = () => {
 
   const [username, setUsername] = useState('');
   const [font, setFont] = useState(currentUser?.font || 'system');
+  const [fontSize, setFontSize] = useState(currentUser?.fontSize || 'regular');
+  const [isBold, setIsBold] = useState(currentUser?.isBold || false);
+  const [isItalic, setIsItalic] = useState(currentUser?.isItalic || false);
+  const [isUnderline, setIsUnderline] = useState(currentUser?.isUnderline || false);
   const [color, setColor] = useState(currentUser?.color || '#000000');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Fan preferences
+  const [nbaTeam, setNbaTeam] = useState(currentUser?.nbaTeam || 'None');
+  const [nhlTeam, setNhlTeam] = useState(currentUser?.nhlTeam || 'None');
+  const [mlbTeam, setMlbTeam] = useState(currentUser?.mlbTeam || 'None');
+  const [nflTeam, setNflTeam] = useState(currentUser?.nflTeam || 'None');
+  
+  // Friends
+  const [friends, setFriends] = useState<{ id: string; name: string; isOnline: boolean }[]>([]);
+  const [friendRequests, setFriendRequests] = useState<string[]>([]);
+  
   const [passwordReset, setPasswordReset] = useState({
     currentPassword: '',
     newPassword: '',
@@ -92,7 +109,18 @@ const Profile = () => {
 
       if (error) throw error;
 
-      updateUserSettings(font, color);
+      updateUserSettings(
+        font, 
+        color, 
+        fontSize, 
+        isBold, 
+        isItalic, 
+        isUnderline,
+        nbaTeam,
+        nhlTeam,
+        mlbTeam,
+        nflTeam
+      );
 
       toast({
         title: "Profile updated",
@@ -147,6 +175,20 @@ const Profile = () => {
     }
   };
 
+  // Friend management
+  const handleAddFriend = (friendName: string) => {
+    setFriendRequests(prev => [...prev, friendName]);
+  };
+
+  const handleAcceptFriend = (friendName: string) => {
+    setFriends(prev => [...prev, { id: `friend_${Date.now()}`, name: friendName, isOnline: true }]);
+    setFriendRequests(prev => prev.filter(req => req !== friendName));
+  };
+
+  const handleRejectFriend = (friendName: string) => {
+    setFriendRequests(prev => prev.filter(req => req !== friendName));
+  };
+
   return (
     <div className="min-h-screen bg-[#008080] p-4">
       <div className="max-w-4xl mx-auto">
@@ -156,7 +198,7 @@ const Profile = () => {
           </div>
           
           <div className="p-4 grid md:grid-cols-2 gap-6">
-            <div>
+            <div className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <ProfileSettings
                   username={username}
@@ -165,6 +207,14 @@ const Profile = () => {
                   onUsernameChange={setUsername}
                   onFontChange={setFont}
                   onColorChange={setColor}
+                  fontSize={fontSize}
+                  onFontSizeChange={setFontSize}
+                  isBold={isBold}
+                  onBoldChange={setIsBold}
+                  isItalic={isItalic}
+                  onItalicChange={setIsItalic}
+                  isUnderline={isUnderline}
+                  onUnderlineChange={setIsUnderline}
                 />
                 
                 <AvatarUpload
@@ -180,9 +230,28 @@ const Profile = () => {
                   {loading ? 'Saving...' : 'Save Profile'}
                 </Button>
               </form>
+              
+              <FanPreferences
+                nbaTeam={nbaTeam}
+                onNbaTeamChange={setNbaTeam}
+                nhlTeam={nhlTeam}
+                onNhlTeamChange={setNhlTeam}
+                mlbTeam={mlbTeam}
+                onMlbTeamChange={setMlbTeam}
+                nflTeam={nflTeam}
+                onNflTeamChange={setNflTeam}
+              />
             </div>
             
-            <div>
+            <div className="space-y-6">
+              <FriendsList
+                friends={friends}
+                friendRequests={friendRequests}
+                onAddFriend={handleAddFriend}
+                onAcceptFriend={handleAcceptFriend}
+                onRejectFriend={handleRejectFriend}
+              />
+              
               <PasswordSettings
                 passwordReset={passwordReset}
                 onPasswordChange={(field, value) => 
@@ -198,7 +267,12 @@ const Profile = () => {
                     fontFamily: font === 'comic' ? 'Comic Neue' : 
                               font === 'typewriter' ? 'Courier New' : 
                               'system-ui',
-                    color: color
+                    color: color,
+                    fontSize: fontSize === 'small' ? '0.9rem' : 
+                             fontSize === 'large' ? '1.1rem' : '1rem',
+                    fontWeight: isBold ? 'bold' : 'normal',
+                    fontStyle: isItalic ? 'italic' : 'normal',
+                    textDecoration: isUnderline ? 'underline' : 'none'
                   }}>
                     This is how your text will look in the chat!
                   </p>

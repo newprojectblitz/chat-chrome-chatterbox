@@ -10,7 +10,18 @@ interface ChatContextType {
   sendMessage: (text: string, channelId: string) => void;
   setActiveTab: (tab: string) => void;
   logout: () => void;
-  updateUserSettings: (font: string, color: string) => void;
+  updateUserSettings: (
+    font: string, 
+    color: string, 
+    fontSize?: string, 
+    isBold?: boolean, 
+    isItalic?: boolean, 
+    isUnderline?: boolean,
+    nbaTeam?: string,
+    nhlTeam?: string,
+    mlbTeam?: string,
+    nflTeam?: string
+  ) => void;
   getChannelMessages: (channelId: string) => ChatMessage[];
   reactToMessage: (messageId: string, reaction: 'like' | 'dislike') => void;
   getTopMessage: (channelId: string) => ChatMessage | null;
@@ -37,6 +48,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeTab, setActiveTab] = useState('public');
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
   const [messageReactions, setMessageReactions] = useState<Record<string, { likes: number, dislikes: number }>>({});
+  const [directMessages, setDirectMessages] = useState<Record<string, ChatMessage[]>>({});
 
   useEffect(() => {
     const username = localStorage.getItem('chat-username');
@@ -49,20 +61,58 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: username,
         font: userSettings.font || 'system',
         color: userSettings.color || '#000000',
+        fontSize: userSettings.fontSize || 'regular',
+        isBold: userSettings.isBold || false,
+        isItalic: userSettings.isItalic || false,
+        isUnderline: userSettings.isUnderline || false,
+        nbaTeam: userSettings.nbaTeam || 'None',
+        nhlTeam: userSettings.nhlTeam || 'None',
+        mlbTeam: userSettings.mlbTeam || 'None',
+        nflTeam: userSettings.nflTeam || 'None',
         isOnline: true
       });
     }
   }, []);
 
-  const updateUserSettings = (font: string, color: string) => {
+  const updateUserSettings = (
+    font: string, 
+    color: string,
+    fontSize = 'regular',
+    isBold = false,
+    isItalic = false,
+    isUnderline = false,
+    nbaTeam = 'None',
+    nhlTeam = 'None',
+    mlbTeam = 'None',
+    nflTeam = 'None'
+  ) => {
     if (currentUser) {
       const updatedUser = { 
         ...currentUser, 
         font, 
-        color 
+        color,
+        fontSize,
+        isBold,
+        isItalic,
+        isUnderline,
+        nbaTeam,
+        nhlTeam,
+        mlbTeam,
+        nflTeam
       };
       
-      localStorage.setItem('chat-settings', JSON.stringify({ font, color }));
+      localStorage.setItem('chat-settings', JSON.stringify({ 
+        font, 
+        color, 
+        fontSize, 
+        isBold, 
+        isItalic, 
+        isUnderline,
+        nbaTeam,
+        nhlTeam,
+        mlbTeam,
+        nflTeam
+      }));
       setCurrentUser(updatedUser);
     }
   };
@@ -83,12 +133,25 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sender: currentUser.name,
       font: currentUser.font,
       color: currentUser.color,
+      fontSize: currentUser.fontSize || 'regular',
+      isBold: currentUser.isBold || false,
+      isItalic: currentUser.isItalic || false,
+      isUnderline: currentUser.isUnderline || false
     };
 
-    setChannelMessages(prev => ({
-      ...prev,
-      [channelId]: [...(prev[channelId] || []), newMessage]
-    }));
+    if (channelId.startsWith('dm_')) {
+      // Handle direct messages
+      setDirectMessages(prev => ({
+        ...prev,
+        [channelId]: [...(prev[channelId] || []), newMessage]
+      }));
+    } else {
+      // Handle channel messages
+      setChannelMessages(prev => ({
+        ...prev,
+        [channelId]: [...(prev[channelId] || []), newMessage]
+      }));
+    }
     
     setMessageReactions(prev => ({
       ...prev,
@@ -97,6 +160,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getChannelMessages = (channelId: string): ChatMessage[] => {
+    if (channelId.startsWith('dm_')) {
+      return directMessages[channelId] || [];
+    }
     return channelMessages[channelId] || [];
   };
 
