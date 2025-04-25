@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -41,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         // If user just signed out, navigate to auth
-        if (!currentSession && (event === 'SIGNED_OUT' || event === 'USER_DELETED')) {
+        if (!currentSession && event === 'SIGNED_OUT') {
           console.log("User signed out, navigating to auth");
           navigate('/auth');
         }
