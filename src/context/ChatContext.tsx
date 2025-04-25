@@ -23,8 +23,8 @@ interface ChatContextType {
     mlbTeam?: string,
     nflTeam?: string
   ) => void;
-  getChannelMessages: (channelId: string) => ChatMessage[];
-  reactToMessage: (messageId: string, reaction: 'like' | 'dislike') => void;
+  getChannelMessages: (channelId: string) => Promise<ChatMessage[]>;
+  reactToMessage: (messageId: string, reaction: 'like' | 'dislike') => Promise<void>;
   getTopMessage: (channelId: string) => ChatMessage | null;
 }
 
@@ -85,11 +85,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { event: '*', schema: 'public', table: 'messages' },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
-            const { data: profile } = await supabase
+            // Fetch the username for this user
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('username')
               .eq('id', payload.new.user_id)
               .single();
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+              return;
+            }
 
             const newMessage: ChatMessage = {
               id: payload.new.id,
@@ -158,13 +164,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const getChannelMessages = async (channelId: string) => {
+  const getChannelMessages = async (channelId: string): Promise<ChatMessage[]> => {
     const { data, error } = await supabase
       .from('messages')
-      .select(`
-        *,
-        profiles:user_id (username)
-      `)
+      .select('*, user_id')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true });
 
@@ -173,10 +176,28 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [];
     }
 
+    // Fetch user profiles separately to get usernames
+    const userIds = [...new Set(data.map(message => message.user_id))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      return [];
+    }
+
+    // Create a lookup for usernames by user_id
+    const usernameLookup = profiles.reduce((acc: Record<string, string>, profile) => {
+      acc[profile.id] = profile.username;
+      return acc;
+    }, {});
+
     return data.map(message => ({
       id: message.id,
       text: message.text,
-      sender: message.profiles.username,
+      sender: usernameLookup[message.user_id] || 'Unknown',
       timestamp: new Date(message.created_at).getTime(),
       font: message.font,
       color: message.color,
@@ -231,6 +252,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } : null);
   };
 
+  const getTopMessage = (channelId: string): ChatMessage | null => {
+    const messages = channelMessages[channelId] || [];
+    return messages.length > 0 ? messages[messages.length - 1] : null;
+  };
+
   return (
     <ChatContext.Provider value={{
       messages: [],
@@ -243,7 +269,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateUserSettings,
       getChannelMessages,
       reactToMessage,
-      getTopMessage: () => null
+      getTopMessage
     }}>
       {children}
     </ChatContext.Provider>

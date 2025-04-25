@@ -10,6 +10,7 @@ export const MessageList = () => {
   const { channelId } = useParams<{ channelId: string }>();
   const { reactToMessage } = useChatContext();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [reactions, setReactions] = useState<Record<string, { likes: number, dislikes: number }>>({});
   
   useEffect(() => {
     if (!channelId) return;
@@ -17,10 +18,7 @@ export const MessageList = () => {
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          profiles:user_id (username)
-        `)
+        .select('*, user_id')
         .eq('channel_id', channelId)
         .order('created_at', { ascending: true });
 
@@ -29,10 +27,28 @@ export const MessageList = () => {
         return;
       }
 
+      // Fetch user profiles separately to get usernames
+      const userIds = [...new Set(data.map(message => message.user_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        return;
+      }
+
+      // Create a lookup for usernames by user_id
+      const usernameLookup = profiles.reduce((acc: Record<string, string>, profile) => {
+        acc[profile.id] = profile.username;
+        return acc;
+      }, {});
+
       setMessages(data.map(message => ({
         id: message.id,
         text: message.text,
-        sender: message.profiles.username,
+        sender: usernameLookup[message.user_id] || 'Unknown',
         timestamp: new Date(message.created_at).getTime(),
         font: message.font,
         color: message.color,
@@ -41,6 +57,38 @@ export const MessageList = () => {
         isItalic: message.is_italic,
         isUnderline: message.is_underline
       })));
+
+      // Fetch reactions for these messages
+      await fetchReactions(data.map(m => m.id));
+    };
+
+    const fetchReactions = async (messageIds: string[]) => {
+      if (messageIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('reactions')
+        .select('message_id, reaction_type')
+        .in('message_id', messageIds);
+
+      if (error) {
+        console.error('Error fetching reactions:', error);
+        return;
+      }
+
+      // Count likes and dislikes for each message
+      const reactionCounts: Record<string, { likes: number, dislikes: number }> = {};
+      data.forEach(reaction => {
+        if (!reactionCounts[reaction.message_id]) {
+          reactionCounts[reaction.message_id] = { likes: 0, dislikes: 0 };
+        }
+        if (reaction.reaction_type === 'like') {
+          reactionCounts[reaction.message_id].likes += 1;
+        } else if (reaction.reaction_type === 'dislike') {
+          reactionCounts[reaction.message_id].dislikes += 1;
+        }
+      });
+
+      setReactions(reactionCounts);
     };
 
     fetchMessages();
@@ -57,11 +105,17 @@ export const MessageList = () => {
           filter: `channel_id=eq.${channelId}`
         },
         async (payload) => {
-          const { data: profile } = await supabase
+          // Fetch the username for this user
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('username')
             .eq('id', payload.new.user_id)
             .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return;
+          }
 
           const newMessage: ChatMessage = {
             id: payload.new.id,
@@ -88,6 +142,18 @@ export const MessageList = () => {
 
   const handleReaction = async (messageId: string, reaction: 'like' | 'dislike') => {
     await reactToMessage(messageId, reaction);
+    
+    // Update local state with the new reaction
+    setReactions(prev => {
+      const current = prev[messageId] || { likes: 0, dislikes: 0 };
+      return {
+        ...prev,
+        [messageId]: {
+          ...current,
+          [reaction === 'like' ? 'likes' : 'dislikes']: current[reaction === 'like' ? 'likes' : 'dislikes'] + 1
+        }
+      };
+    });
   };
 
   return (
@@ -120,15 +186,17 @@ export const MessageList = () => {
                 <div className="flex items-center gap-2 ml-2 text-gray-500 text-xs">
                   <button 
                     onClick={() => handleReaction(message.id, 'like')}
-                    className="p-1 hover:bg-gray-200 rounded"
+                    className="p-1 hover:bg-gray-200 rounded flex items-center gap-1"
                   >
                     <ThumbsUp className="w-3 h-3" />
+                    {reactions[message.id]?.likes > 0 && <span>{reactions[message.id]?.likes}</span>}
                   </button>
                   <button 
                     onClick={() => handleReaction(message.id, 'dislike')}
-                    className="p-1 hover:bg-gray-200 rounded"
+                    className="p-1 hover:bg-gray-200 rounded flex items-center gap-1"
                   >
                     <ThumbsDown className="w-3 h-3" />
+                    {reactions[message.id]?.dislikes > 0 && <span>{reactions[message.id]?.dislikes}</span>}
                   </button>
                   <span>
                     {new Date(message.timestamp).toLocaleTimeString()}
