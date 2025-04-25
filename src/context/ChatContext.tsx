@@ -33,11 +33,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     reality2: [],
     sports2: [],
   });
-  const [users, setUsers] = useState<ChatUser[]>([
-    { id: '1', name: 'TrashQueen', font: 'comic', color: '#FF0000', isOnline: true },
-    { id: '2', name: 'RealityFan99', font: 'system', color: '#0000FF', isOnline: true },
-    { id: '3', name: 'TVGossiper', font: 'typewriter', color: '#008000', isOnline: true },
-  ]);
+  const [users, setUsers] = useState<ChatUser[]>([]);
   const [activeTab, setActiveTab] = useState('public');
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
   const [messageReactions, setMessageReactions] = useState<Record<string, { likes: number, dislikes: number }>>({});
@@ -66,10 +62,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         color 
       };
       
-      // Save to localStorage
       localStorage.setItem('chat-settings', JSON.stringify({ font, color }));
-      
-      // Update current user
       setCurrentUser(updatedUser);
     }
   };
@@ -94,10 +87,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setChannelMessages(prev => ({
       ...prev,
-      [channelId]: [...(prev[channelId as keyof typeof prev] || []), newMessage]
+      [channelId]: [...(prev[channelId] || []), newMessage]
     }));
     
-    // Initialize reactions for the new message
     setMessageReactions(prev => ({
       ...prev,
       [newMessage.id]: { likes: 0, dislikes: 0 }
@@ -105,7 +97,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getChannelMessages = (channelId: string): ChatMessage[] => {
-    return channelMessages[channelId as keyof typeof channelMessages] || [];
+    return channelMessages[channelId] || [];
   };
 
   const reactToMessage = (messageId: string, reaction: 'like' | 'dislike') => {
@@ -129,7 +121,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let maxLikes = -1;
     
     Object.entries(messageReactions).forEach(([messageId, reactions]) => {
-      // Check if this message belongs to the current channel
       const messageInChannel = messages.some(msg => msg.id === messageId);
       if (messageInChannel && reactions.likes > maxLikes) {
         maxLikes = reactions.likes;
@@ -146,7 +137,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <ChatContext.Provider value={{ 
-      messages: [], // Keep this for backward compatibility
+      messages: [], 
       users, 
       activeTab, 
       currentUser,
