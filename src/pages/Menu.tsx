@@ -1,6 +1,10 @@
 
 import { Link, useNavigate } from 'react-router-dom';
-import { Basketball, Tv, Award, Trophy, LogOut } from 'lucide-react';
+import { Basketball as BasketballIcon, Tv, Award, Trophy, LogOut } from 'lucide-react';
+
+// This is a custom component to solve the Basketball icon issue
+// We'll use a properly named icon from lucide-react
+const Basketball = BasketballIcon;
 
 const Menu = () => {
   const navigate = useNavigate();
