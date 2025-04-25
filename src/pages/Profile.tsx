@@ -12,11 +12,12 @@ import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { PasswordSettings } from '@/components/profile/PasswordSettings';
 import { FanPreferences } from '@/components/profile/FanPreferences';
 import { FriendsList } from '@/components/profile/FriendsList';
+import { toast } from '@/components/ui/sonner';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { currentUser, updateUserSettings } = useChatContext();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -47,6 +48,8 @@ const Profile = () => {
   });
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       navigate('/auth');
       return;
@@ -56,59 +59,109 @@ const Profile = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, avatar_url')
+          .select('username, avatar_url, nba_team, nhl_team, mlb_team, nfl_team')
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast.error('Failed to load profile data');
+          return;
+        }
 
         if (data) {
-          setUsername(data.username);
+          console.log('Profile data loaded:', data);
+          setUsername(data.username || '');
           if (data.avatar_url) setAvatarUrl(data.avatar_url);
+          if (data.nba_team) setNbaTeam(data.nba_team);
+          if (data.nhl_team) setNhlTeam(data.nhl_team);
+          if (data.mlb_team) setMlbTeam(data.mlb_team);
+          if (data.nfl_team) setNflTeam(data.nfl_team);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in fetchProfile:', error);
+        toast.error('Failed to load profile data');
       }
     };
 
     fetchProfile();
-  }, [user, navigate]);
+  }, [user, navigate, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Submitting profile update...');
 
     try {
+      if (!user) {
+        throw new Error('You must be logged in to update your profile');
+      }
+      
       let avatarURL = avatarUrl;
       if (avatar) {
+        console.log('Uploading new avatar...');
         const fileExt = avatar.name.split('.').pop();
-        const fileName = `${user!.id}-${Math.random().toString(36).substring(2)}`;
+        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}`;
         const filePath = `${fileName}.${fileExt}`;
+
+        // Check if storage bucket exists
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const avatarBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
+        
+        // Create bucket if it doesn't exist
+        if (!avatarBucketExists) {
+          console.log('Creating avatars bucket...');
+          const { data, error: bucketError } = await supabase.storage.createBucket('avatars', {
+            public: true
+          });
+          
+          if (bucketError) {
+            console.error('Error creating bucket:', bucketError);
+            throw bucketError;
+          }
+        }
 
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, avatar);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Error uploading avatar:', uploadError);
+          throw uploadError;
+        }
 
         const { data } = supabase.storage
           .from('avatars')
           .getPublicUrl(filePath);
         
         avatarURL = data.publicUrl;
+        console.log('Avatar uploaded successfully:', avatarURL);
       }
 
+      console.log('Updating profile data...');
+      const updateData = {
+        username,
+        avatar_url: avatarURL,
+        nba_team: nbaTeam,
+        nhl_team: nhlTeam,
+        mlb_team: mlbTeam,
+        nfl_team: nflTeam,
+        updated_at: new Date().toISOString(),
+      };
+      
+      console.log('Update data:', updateData);
+      
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username,
-          avatar_url: avatarURL,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user!.id);
+        .update(updateData)
+        .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
 
+      console.log('Updating user settings in context...');
       updateUserSettings(
         font, 
         color, 
@@ -122,16 +175,10 @@ const Profile = () => {
         nflTeam
       );
 
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error updating profile",
-        description: error instanceof Error ? error.message : "An error occurred",
-      });
+      console.error('Error in handleSubmit:', error);
+      toast.error(error instanceof Error ? error.message : "An error occurred while updating your profile");
     } finally {
       setLoading(false);
     }
@@ -141,25 +188,20 @@ const Profile = () => {
     e.preventDefault();
     
     if (passwordReset.newPassword !== passwordReset.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Passwords don't match",
-        description: "Your new password and confirm password must match.",
-      });
+      toast.error("New password and confirm password don't match");
       return;
     }
     
     try {
+      setLoading(true);
+      console.log('Updating password...');
       const { error } = await supabase.auth.updateUser({ 
         password: passwordReset.newPassword 
       });
       
       if (error) throw error;
       
-      toast({
-        title: "Password updated",
-        description: "Your password has been successfully updated.",
-      });
+      toast.success("Password updated successfully!");
       
       setPasswordReset({
         currentPassword: '',
@@ -167,11 +209,10 @@ const Profile = () => {
         confirmPassword: '',
       });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error updating password",
-        description: error instanceof Error ? error.message : "An error occurred",
-      });
+      console.error('Error updating password:', error);
+      toast.error(error instanceof Error ? error.message : "An error occurred while updating your password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,6 +229,20 @@ const Profile = () => {
   const handleRejectFriend = (friendName: string) => {
     setFriendRequests(prev => prev.filter(req => req !== friendName));
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+      <div className="text-white text-lg">Please log in to view your profile</div>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#008080] p-4">

@@ -2,9 +2,10 @@
 import { Link, Navigate } from 'react-router-dom';
 import { Volleyball, Tv, Award, Trophy, LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from '@/components/ui/sonner';
 
 const Menu = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
@@ -12,6 +13,24 @@ const Menu = () => {
     { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
     { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+      toast.error("Failed to sign out. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -57,11 +76,12 @@ const Menu = () => {
               </Link>
               
               <button 
-                onClick={() => signOut()} 
+                onClick={handleSignOut} 
                 className="retro-button flex items-center gap-2 flex-1 justify-center"
+                disabled={isLoading}
               >
                 <LogOut className="w-5 h-5" />
-                Log Out
+                {isLoading ? 'Signing Out...' : 'Log Out'}
               </button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Navigate } from 'react-router-dom';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,13 +16,16 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { signInWithCredentials, signInWithGoogle, signUp } = useAuth();
+  const { signInWithCredentials, signInWithGoogle, signUp, isLoading, user } = useAuth();
   const { toast } = useToast();
+
+  // If user is already logged in, redirect to menu
+  if (user) {
+    return <Navigate to="/menu" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     try {
       if (isLogin) {
         console.log('Attempting to sign in with:', identifier, password);
@@ -36,19 +40,12 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
-      });
-    } finally {
-      setIsLoading(false);
+      // Error handling is already in the auth context
     }
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     try {
       console.log('Attempting password reset for:', resetEmail);
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
@@ -69,8 +66,6 @@ const Auth = () => {
         title: "Error",
         description: error instanceof Error ? error.message : "An error occurred",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
