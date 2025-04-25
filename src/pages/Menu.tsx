@@ -7,17 +7,8 @@ import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  // Access auth context safely
-  let authContext;
-  try {
-    authContext = useAuth();
-  } catch (error) {
-    console.error("Auth context error:", error);
-    // Redirect to auth page if auth context is not available
-    return <Navigate to="/auth" replace />;
-  }
-  
-  const { user, signOut, isLoading } = authContext;
+  // Access auth context
+  const { user, signOut, isLoading } = useAuth();
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
@@ -31,7 +22,7 @@ const Menu = () => {
     try {
       console.log("Attempting to sign out from Menu");
       await signOut();
-      // Navigation will now happen via the auth state change listener in AuthContext
+      // Navigation will happen via the signOut function in AuthContext
     } catch (error) {
       console.error("Failed to sign out:", error);
       toast.error("Failed to sign out. Please try again.");

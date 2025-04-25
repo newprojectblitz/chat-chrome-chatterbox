@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     const checkExistingSession = async () => {
       try {
+        console.log("Checking for existing session...");
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         console.log("Existing session check:", currentSession?.user?.email);
         
@@ -66,7 +67,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     checkExistingSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const signIn = async (identifier: string, password: string) => {
@@ -85,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       console.log("Sign in successful:", data);
-      // Navigate will happen via the auth state change listener
+      // Navigation will happen via the auth state change listener
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast.error(error.message || "Failed to sign in");
@@ -150,14 +154,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       console.log("Attempting to sign out");
       
+      // Important: We need to call signOut() correctly and await its result
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error("Sign out error:", error);
         throw error;
       }
       
+      // Reset local state immediately
+      setSession(null);
+      setUser(null);
+      
       console.log("Sign out successful");
-      // We don't navigate here - the auth state change listener will handle that
+      // We navigate here explicitly to ensure redirect happens
+      navigate('/auth');
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast.error(error.message || "Failed to sign out");
