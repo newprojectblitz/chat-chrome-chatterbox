@@ -24,3 +24,21 @@ export const signInWithCredentials = async (identifier: string, password: string
     return { data: null, error };
   }
 };
+
+export const signOut = async () => {
+  try {
+    console.log("Auth utility: signing out");
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error("Sign out error:", error);
+      throw error;
+    }
+    
+    console.log("Sign out successful");
+    return { error: null };
+  } catch (error) {
+    console.error("Sign out error in utility:", error);
+    return { error };
+  }
+};

@@ -5,11 +5,13 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/components/ui/sonner';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     // Mark page as loaded after initial render
@@ -22,9 +24,15 @@ const Auth = () => {
   let isLoading = true;
   
   // Define the functions with the correct type signatures
-  let signInWithCredentials: (identifier: string, password: string) => Promise<void> = async () => {};
-  let signInWithGoogle: () => Promise<void> = async () => {};
-  let signUp: (email: string, password: string, username: string) => Promise<void> = async () => {};
+  let signInWithCredentials: (identifier: string, password: string) => Promise<void> = async () => {
+    toast.error("Authentication context not available");
+  };
+  let signInWithGoogle: () => Promise<void> = async () => {
+    toast.error("Authentication context not available");
+  };
+  let signUp: (email: string, password: string, username: string) => Promise<void> = async () => {
+    toast.error("Authentication context not available");
+  };
 
   try {
     const auth = useAuth();
@@ -36,7 +44,7 @@ const Auth = () => {
     signUp = auth.signUp;
   } catch (error) {
     console.error("Auth context error:", error);
-    // If auth context fails, we'll show loading state
+    setAuthError("Authentication system is not available");
   }
 
   // Show loading state while checking authentication
@@ -44,6 +52,15 @@ const Auth = () => {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
         <div className="text-white text-lg">Loading authentication...</div>
+      </div>
+    );
+  }
+
+  // Show error state if auth context is not available
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Error: {authError}</div>
       </div>
     );
   }

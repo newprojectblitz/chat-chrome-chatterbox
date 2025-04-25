@@ -9,7 +9,9 @@ import { ChannelList } from '@/components/menu/ChannelList';
 const Menu = () => {
   // Try-catch block to safely access auth context
   let user = null;
-  let signOut = async () => {};
+  let signOut = async () => {
+    toast.error("Authentication context not available");
+  };
   let isLoading = true;
 
   try {

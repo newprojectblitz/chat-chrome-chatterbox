@@ -25,45 +25,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log("Checking for existing session...");
+    let mounted = true;
     
-    // Set up auth state listener FIRST (important for order)
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        if (!mounted) return;
+        
         console.log("Auth state changed:", event, currentSession?.user?.email);
         
         // Update session and user state
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Navigate based on auth event
+        // Navigate based on auth event if component is still mounted
         if (currentSession && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           console.log("User signed in, navigating to menu");
           navigate('/menu');
-        } else if (!currentSession && event === 'SIGNED_OUT') {
+        } else if (event === 'SIGNED_OUT') {
           console.log("User signed out, navigating to auth");
           navigate('/auth');
         }
         
-        // Only set loading to false after we've processed the auth state
+        // Set loading to false after we've processed the auth state
         setIsLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Then check for existing session
     const checkExistingSession = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         console.log("Existing session check:", data.session?.user?.email);
         
-        if (data.session) {
+        if (data.session && mounted) {
           setSession(data.session);
           setUser(data.session.user);
         }
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
-        // This ensures we're not stuck in loading state if session check fails
-        setIsLoading(false);
+        // Only update if component is still mounted
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -71,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       console.log("Cleaning up auth subscription");
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);
@@ -164,6 +170,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast.error(error.message || "Failed to sign out");
         throw error;
       }
+      
+      // Clear local state
+      setUser(null);
+      setSession(null);
       
       console.log("Sign out successful");
       // The auth state change listener will handle navigation
