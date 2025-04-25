@@ -1,10 +1,12 @@
+
 import { Link, useNavigate } from 'react-router-dom';
+import { useChatContext } from '../context/ChatContext';
 import { Basketball, Tv, Award, Trophy, LogOut } from 'lucide-react';
 
 const Menu = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem('chat-username') || 'Guest';
-
+  const { currentUser, logout } = useChatContext();
+  
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
     { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Basketball },
@@ -13,9 +15,14 @@ const Menu = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('chat-username');
+    logout();
     navigate('/');
   };
+
+  if (!currentUser) {
+    navigate('/');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#008080] p-4">
@@ -24,7 +31,7 @@ const Menu = () => {
           <div className="title-bar flex justify-between items-center">
             <span>TrashTok Channels</span>
             <span className="text-sm">
-              Welcome, {username}
+              Welcome, {currentUser.name}
             </span>
           </div>
           <div className="p-4">

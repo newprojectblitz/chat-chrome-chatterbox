@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useChatContext } from '../context/ChatContext';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Check, X } from 'lucide-react';
 
 export const UserRoster = () => {
   const { users } = useChatContext();
@@ -20,6 +20,10 @@ export const UserRoster = () => {
 
   const acceptFriendRequest = (username: string) => {
     setFriends([...friends, username]);
+    setFriendRequests(friendRequests.filter(req => req !== username));
+  };
+
+  const rejectFriendRequest = (username: string) => {
     setFriendRequests(friendRequests.filter(req => req !== username));
   };
 
@@ -60,12 +64,20 @@ export const UserRoster = () => {
           {friendRequests.map((req, i) => (
             <div key={i} className="flex items-center justify-between text-xs mb-1">
               <span>{req}</span>
-              <button 
-                onClick={() => acceptFriendRequest(req)}
-                className="text-xs retro-button py-0 px-1"
-              >
-                Accept
-              </button>
+              <div className="flex gap-1">
+                <button 
+                  onClick={() => acceptFriendRequest(req)}
+                  className="text-xs retro-button py-0 px-1 flex items-center"
+                >
+                  <Check className="w-3 h-3 mr-1" /> Accept
+                </button>
+                <button 
+                  onClick={() => rejectFriendRequest(req)}
+                  className="text-xs retro-button py-0 px-1 flex items-center"
+                >
+                  <X className="w-3 h-3 mr-1" /> Reject
+                </button>
+              </div>
             </div>
           ))}
         </div>
