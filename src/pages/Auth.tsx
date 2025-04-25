@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
+import { useAuth } from '@/context/AuthContext';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);

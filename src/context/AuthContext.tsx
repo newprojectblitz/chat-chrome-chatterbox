@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { signInWithCredentials } from '@/utils/auth';
 import { toast } from '@/components/ui/sonner';
 
 interface AuthContextType {
@@ -35,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(currentSession?.user ?? null);
         
         // If user just signed in, navigate to menu
-        if (currentSession && event === 'SIGNED_IN') {
+        if (currentSession && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           console.log("User signed in, navigating to menu");
           navigate('/menu');
         }
@@ -74,7 +73,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       console.log("Signing in with:", identifier);
-      const { data, error } = await signInWithCredentials(identifier, password);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: identifier,
+        password,
+      });
       
       if (error) {
         console.error("Sign in error:", error);
@@ -95,7 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, username: string) => {
     try {
       setIsLoading(true);
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -103,9 +106,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       
-      if (signUpError) {
-        console.error("Sign up error:", signUpError);
-        throw signUpError;
+      if (error) {
+        console.error("Sign up error:", error);
+        throw error;
       }
 
       console.log("Sign up successful:", data);
