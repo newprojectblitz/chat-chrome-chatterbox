@@ -1,10 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useChatContext } from '../context/ChatContext';
+
+import { Link, Navigate } from 'react-router-dom';
 import { Volleyball, Tv, Award, Trophy, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Menu = () => {
-  const navigate = useNavigate();
-  const { currentUser, logout } = useChatContext();
+  const { user, signOut } = useAuth();
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
@@ -13,14 +13,8 @@ const Menu = () => {
     { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  if (!currentUser) {
-    navigate('/');
-    return null;
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (
@@ -30,7 +24,7 @@ const Menu = () => {
           <div className="title-bar flex justify-between items-center">
             <span>TrashTok Channels</span>
             <span className="text-sm">
-              Welcome, {currentUser.name}
+              Welcome, {user.email?.split('@')[0]}
             </span>
           </div>
           <div className="p-4">
@@ -55,7 +49,7 @@ const Menu = () => {
             
             <div className="mt-8">
               <button 
-                onClick={handleLogout} 
+                onClick={() => signOut()} 
                 className="retro-button flex items-center gap-2 w-full justify-center"
               >
                 <LogOut className="w-5 h-5" />
