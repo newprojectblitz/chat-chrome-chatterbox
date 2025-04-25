@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,10 +9,25 @@ import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const { signInWithCredentials, signInWithGoogle, signUp, isLoading, user } = useAuth();
+  const { signInWithCredentials, signInWithGoogle, signUp, isLoading, user, session } = useAuth();
+  const [pageLoaded, setPageLoaded] = useState(false);
+
+  // Mark the page as loaded after initial render
+  useEffect(() => {
+    setPageLoaded(true);
+  }, []);
+
+  // Show loading state until we're sure about authentication status
+  if (isLoading && !pageLoaded) {
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Loading authentication...</div>
+      </div>
+    );
+  }
 
   // If user is already logged in, redirect to menu
-  if (user) {
+  if (user && session) {
     return <Navigate to="/menu" replace />;
   }
 

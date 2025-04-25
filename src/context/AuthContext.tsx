@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -50,19 +51,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log("Existing session check:", currentSession?.user?.email);
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      // If already logged in and on auth page, redirect to menu
-      if (currentSession && window.location.pathname === '/auth') {
-        console.log("User already logged in, redirecting to menu");
-        navigate('/menu');
+    const checkExistingSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log("Existing session check:", currentSession?.user?.email);
+        
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        // If already logged in and on auth page, redirect to menu
+        // But avoid redirection if we're already on the menu page
+        if (currentSession && window.location.pathname === '/auth') {
+          console.log("User already logged in, redirecting to menu");
+          navigate('/menu');
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    });
+    };
+
+    checkExistingSession();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -144,15 +154,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       console.log("Attempting to sign out");
       
-      // Clear auth state first to prevent UI flickering
-      setUser(null);
-      setSession(null);
-      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
         throw error;
       }
+      
+      // Clear auth state manually to ensure UI updates
+      setUser(null);
+      setSession(null);
       
       console.log("Sign out successful");
       // Make sure we navigate to auth page
