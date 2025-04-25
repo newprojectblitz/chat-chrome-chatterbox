@@ -11,8 +11,20 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
 
-  // Handle auth context safely
-  const authContext = useAuth();
+  // Access auth context safely
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.error("Auth context error:", error);
+    // Return a loading state if auth context is not available yet
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Initializing authentication...</div>
+      </div>
+    );
+  }
+
   const { 
     signInWithCredentials, 
     signInWithGoogle, 
