@@ -24,7 +24,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    console.log("Checking for existing session...");
+    
+    // Set up auth state listener FIRST (important for order)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.email);
@@ -33,18 +35,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // If user just signed in, navigate to menu
+        // Navigate based on auth event
         if (currentSession && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           console.log("User signed in, navigating to menu");
           navigate('/menu');
-        }
-        
-        // If user just signed out, navigate to auth
-        if (!currentSession && event === 'SIGNED_OUT') {
+        } else if (!currentSession && event === 'SIGNED_OUT') {
           console.log("User signed out, navigating to auth");
           navigate('/auth');
         }
         
+        // Only set loading to false after we've processed the auth state
         setIsLoading(false);
       }
     );
@@ -52,27 +52,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     const checkExistingSession = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Existing session check:", currentSession?.user?.email);
+        const { data } = await supabase.auth.getSession();
+        console.log("Existing session check:", data.session?.user?.email);
         
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+        }
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
+        // This ensures we're not stuck in loading state if session check fails
         setIsLoading(false);
       }
     };
 
     checkExistingSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const signIn = async (identifier: string, password: string) => {
     try {
       setIsLoading(true);
-      console.log("Signing in with:", identifier);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: identifier,
@@ -81,11 +86,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error("Sign in error:", error);
+        toast.error(error.message || "Failed to sign in");
         throw error;
       }
       
       console.log("Sign in successful:", data);
-      // Navigate will happen via the auth state change listener
+      // Navigation happens via the auth state change listener
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast.error(error.message || "Failed to sign in");
@@ -108,6 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error("Sign up error:", error);
+        toast.error(error.message || "Failed to sign up");
         throw error;
       }
 
@@ -134,6 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error("Google sign in error:", error);
+        toast.error(error.message || "Failed to sign in with Google");
         throw error;
       }
     } catch (error: any) {
@@ -153,11 +161,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
+        toast.error(error.message || "Failed to sign out");
         throw error;
       }
       
       console.log("Sign out successful");
-      // We don't navigate here - the auth state change listener will handle that
+      // The auth state change listener will handle navigation
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast.error(error.message || "Failed to sign out");

@@ -5,7 +5,7 @@ export const signInWithCredentials = async (identifier: string, password: string
   console.log("Auth utility: signing in with", identifier);
   
   try {
-    // First, try standard email and password login since this is the most common case
+    // Attempt regular email and password login
     console.log("Attempting regular email sign-in");
     const { data, error } = await supabase.auth.signInWithPassword({
       email: identifier,
@@ -13,10 +13,11 @@ export const signInWithCredentials = async (identifier: string, password: string
     });
     
     if (!error) {
+      console.log("Sign-in successful:", data.user?.email);
       return { data, error: null };
     }
     
-    console.error("Regular sign-in failed:", error);
+    console.error("Sign-in failed:", error);
     return { data: null, error };
   } catch (error) {
     console.error("Sign in error in utility:", error);

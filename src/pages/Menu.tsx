@@ -7,17 +7,21 @@ import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  // Access auth context safely
-  let authContext;
+  // Try-catch block to safely access auth context
+  let user = null;
+  let signOut = async () => {};
+  let isLoading = true;
+
   try {
-    authContext = useAuth();
+    const auth = useAuth();
+    user = auth.user;
+    signOut = auth.signOut;
+    isLoading = auth.isLoading;
   } catch (error) {
     console.error("Auth context error:", error);
-    // Redirect to auth page if auth context is not available
+    // If auth context fails, redirect to auth page
     return <Navigate to="/auth" replace />;
   }
-  
-  const { user, signOut, isLoading } = authContext;
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
@@ -31,14 +35,14 @@ const Menu = () => {
     try {
       console.log("Attempting to sign out from Menu");
       await signOut();
-      // Navigation will now happen via the auth state change listener in AuthContext
+      // Navigation will happen via the auth state change listener
     } catch (error) {
       console.error("Failed to sign out:", error);
       toast.error("Failed to sign out. Please try again.");
     }
   };
 
-  // Display loading state while authentication is being checked
+  // Display loading state while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
@@ -49,6 +53,7 @@ const Menu = () => {
 
   // Redirect to auth page if no user is logged in
   if (!user) {
+    console.log("No user found, redirecting to auth");
     return <Navigate to="/auth" replace />;
   }
 

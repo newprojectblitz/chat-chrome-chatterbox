@@ -11,35 +11,33 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
 
-  // Access auth context safely
-  let authContext;
-  try {
-    authContext = useAuth();
-  } catch (error) {
-    console.error("Auth context error:", error);
-    // Return a loading state if auth context is not available yet
-    return (
-      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
-        <div className="text-white text-lg">Initializing authentication...</div>
-      </div>
-    );
-  }
-
-  const { 
-    signInWithCredentials, 
-    signInWithGoogle, 
-    signUp, 
-    isLoading, 
-    user, 
-    session 
-  } = authContext;
-
-  // Mark the page as loaded after initial render
   useEffect(() => {
+    // Mark page as loaded after initial render
     setPageLoaded(true);
   }, []);
 
-  // Show loading state until we're sure about authentication status
+  // Try-catch block to safely access auth context
+  let user = null;
+  let session = null;
+  let isLoading = true;
+  let signInWithCredentials = async () => {};
+  let signInWithGoogle = async () => {};
+  let signUp = async () => {};
+
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    session = auth.session;
+    isLoading = auth.isLoading;
+    signInWithCredentials = auth.signInWithCredentials;
+    signInWithGoogle = auth.signInWithGoogle;
+    signUp = auth.signUp;
+  } catch (error) {
+    console.error("Auth context error:", error);
+    // If auth context fails, we'll show loading state
+  }
+
+  // Show loading state while checking authentication
   if ((isLoading || !pageLoaded) && !user) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
@@ -48,7 +46,7 @@ const Auth = () => {
     );
   }
 
-  // If user is already logged in, redirect to menu
+  // Redirect to menu if user is already logged in
   if (user && session) {
     console.log("User already logged in, redirecting to menu");
     return <Navigate to="/menu" replace />;
