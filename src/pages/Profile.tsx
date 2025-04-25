@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatContext } from '@/context/ChatContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, User, Settings } from 'lucide-react';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileSettings } from '@/components/profile/ProfileSettings';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { PasswordSettings } from '@/components/profile/PasswordSettings';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -61,7 +62,6 @@ const Profile = () => {
     setLoading(true);
 
     try {
-      // Update avatar if changed
       let avatarURL = avatarUrl;
       if (avatar) {
         const fileExt = avatar.name.split('.').pop();
@@ -81,7 +81,6 @@ const Profile = () => {
         avatarURL = data.publicUrl;
       }
 
-      // Update profile in database
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -93,7 +92,6 @@ const Profile = () => {
 
       if (error) throw error;
 
-      // Update chat context settings
       updateUserSettings(font, color);
 
       toast({
@@ -149,87 +147,30 @@ const Profile = () => {
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAvatar(e.target.files[0]);
-    }
-  };
-
-  const fonts = [
-    { id: 'system', label: 'System Sans' },
-    { id: 'comic', label: 'Comic Sans' },
-    { id: 'typewriter', label: 'Typewriter' }
-  ];
-
   return (
     <div className="min-h-screen bg-[#008080] p-4">
       <div className="max-w-4xl mx-auto">
         <div className="retro-window">
-          <div className="title-bar flex justify-between items-center">
-            <div className="flex items-center">
-              <button 
-                onClick={() => navigate('/menu')} 
-                className="bg-transparent border-none text-white flex items-center"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </button>
-              <span>User Profile</span>
-            </div>
+          <div className="title-bar">
+            <ProfileHeader />
           </div>
           
           <div className="p-4 grid md:grid-cols-2 gap-6">
             <div>
-              <div className="flex items-center mb-4">
-                <User className="w-6 h-6 mr-2" />
-                <h2 className="text-xl font-bold">Profile Settings</h2>
-              </div>
-              
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
+                <ProfileSettings
+                  username={username}
+                  font={font}
+                  color={color}
+                  onUsernameChange={setUsername}
+                  onFontChange={setFont}
+                  onColorChange={setColor}
+                />
                 
-                <div className="space-y-2">
-                  <Label htmlFor="font">Font Style</Label>
-                  <select
-                    id="font"
-                    value={font}
-                    onChange={(e) => setFont(e.target.value)}
-                    className="w-full retro-inset p-2"
-                  >
-                    {fonts.map(f => (
-                      <option key={f.id} value={f.id}>{f.label}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="color">Text Color</Label>
-                  <Input
-                    id="color"
-                    type="color"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="h-10 retro-inset"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="avatar">Profile Picture</Label>
-                  <Input
-                    id="avatar"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="retro-inset"
-                  />
-                </div>
+                <AvatarUpload
+                  onAvatarChange={setAvatar}
+                  avatarUrl={avatarUrl}
+                />
                 
                 <Button 
                   type="submit" 
@@ -242,51 +183,13 @@ const Profile = () => {
             </div>
             
             <div>
-              <div className="flex items-center mb-4">
-                <Settings className="w-6 h-6 mr-2" />
-                <h2 className="text-xl font-bold">Account Settings</h2>
-              </div>
-              
-              <form onSubmit={handlePasswordReset} className="space-y-4">
-                <h3 className="font-bold">Change Password</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={passwordReset.currentPassword}
-                    onChange={(e) => setPasswordReset({...passwordReset, currentPassword: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={passwordReset.newPassword}
-                    onChange={(e) => setPasswordReset({...passwordReset, newPassword: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={passwordReset.confirmPassword}
-                    onChange={(e) => setPasswordReset({...passwordReset, confirmPassword: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <Button type="submit" className="retro-button">
-                  Update Password
-                </Button>
-              </form>
+              <PasswordSettings
+                passwordReset={passwordReset}
+                onPasswordChange={(field, value) => 
+                  setPasswordReset(prev => ({ ...prev, [field]: value }))
+                }
+                onSubmit={handlePasswordReset}
+              />
               
               <div className="mt-6">
                 <div className="text-sample p-3 retro-inset">
