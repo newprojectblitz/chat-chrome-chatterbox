@@ -9,8 +9,30 @@ import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const { signInWithCredentials, signInWithGoogle, signUp, isLoading, user, session } = useAuth();
   const [pageLoaded, setPageLoaded] = useState(false);
+
+  // Access auth context safely
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.error("Auth context error:", error);
+    // Return a loading state if auth context is not available yet
+    return (
+      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
+        <div className="text-white text-lg">Initializing authentication...</div>
+      </div>
+    );
+  }
+
+  const { 
+    signInWithCredentials, 
+    signInWithGoogle, 
+    signUp, 
+    isLoading, 
+    user, 
+    session 
+  } = authContext;
 
   // Mark the page as loaded after initial render
   useEffect(() => {
@@ -18,7 +40,7 @@ const Auth = () => {
   }, []);
 
   // Show loading state until we're sure about authentication status
-  if (isLoading && !pageLoaded) {
+  if ((isLoading || !pageLoaded) && !user) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
         <div className="text-white text-lg">Loading authentication...</div>
@@ -28,6 +50,7 @@ const Auth = () => {
 
   // If user is already logged in, redirect to menu
   if (user && session) {
+    console.log("User already logged in, redirecting to menu");
     return <Navigate to="/menu" replace />;
   }
 

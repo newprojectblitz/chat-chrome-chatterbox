@@ -58,13 +58,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        
-        // If already logged in and on auth page, redirect to menu
-        // But avoid redirection if we're already on the menu page
-        if (currentSession && window.location.pathname === '/auth') {
-          console.log("User already logged in, redirecting to menu");
-          navigate('/menu');
-        }
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
@@ -160,13 +153,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
       
-      // Clear auth state manually to ensure UI updates
-      setUser(null);
-      setSession(null);
-      
       console.log("Sign out successful");
-      // Make sure we navigate to auth page
-      navigate('/auth');
+      // We don't navigate here - the auth state change listener will handle that
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast.error(error.message || "Failed to sign out");

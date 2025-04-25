@@ -1,13 +1,23 @@
 
 import { Navigate } from 'react-router-dom';
 import { Volleyball, Tv, Award, Trophy } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/sonner';
 import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  const { user, signOut, isLoading } = useAuth();
+  // Access auth context safely
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.error("Auth context error:", error);
+    // Redirect to auth page if auth context is not available
+    return <Navigate to="/auth" replace />;
+  }
+  
+  const { user, signOut, isLoading } = authContext;
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
