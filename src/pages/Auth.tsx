@@ -20,9 +20,11 @@ const Auth = () => {
   let user = null;
   let session = null;
   let isLoading = true;
-  let signInWithCredentials = async () => {};
-  let signInWithGoogle = async () => {};
-  let signUp = async () => {};
+  
+  // Define the functions with the correct type signatures
+  let signInWithCredentials: (identifier: string, password: string) => Promise<void> = async () => {};
+  let signInWithGoogle: () => Promise<void> = async () => {};
+  let signUp: (email: string, password: string, username: string) => Promise<void> = async () => {};
 
   try {
     const auth = useAuth();
