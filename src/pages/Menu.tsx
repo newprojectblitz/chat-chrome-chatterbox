@@ -1,60 +1,16 @@
 
 import { Link, Navigate } from 'react-router-dom';
-import { Globe, Users, Gamepad2, Plane, BookOpen, ShoppingCart, Heart, Music } from 'lucide-react';
+import { Volleyball, Tv, Award, Trophy, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Menu = () => {
   const { user, signOut } = useAuth();
   
   const channels = [
-    { 
-      id: 'international', 
-      name: 'International', 
-      icon: Globe,
-      gradient: 'from-[#4a9f45] to-[#2d7a29]'
-    },
-    { 
-      id: 'games', 
-      name: 'Games', 
-      icon: Gamepad2,
-      gradient: 'from-[#ff9966] to-[#ff5e62]'
-    },
-    { 
-      id: 'travel', 
-      name: 'Travel', 
-      icon: Plane,
-      gradient: 'from-[#e65c00] to-[#F9D423]'
-    },
-    { 
-      id: 'learning', 
-      name: 'Research & Learn', 
-      icon: BookOpen,
-      gradient: 'from-[#f46b45] to-[#eea849]'
-    },
-    { 
-      id: 'lifestyle', 
-      name: 'Lifestyle', 
-      icon: Heart,
-      gradient: 'from-[#e14fad] to-[#f9d423]'
-    },
-    { 
-      id: 'shopping', 
-      name: 'Shopping', 
-      icon: ShoppingCart,
-      gradient: 'from-[#00c6ff] to-[#0072ff]'
-    },
-    { 
-      id: 'community', 
-      name: 'Community', 
-      icon: Users,
-      gradient: 'from-[#4776E6] to-[#8E54E9]'
-    },
-    { 
-      id: 'entertainment', 
-      name: 'Entertainment', 
-      icon: Music,
-      gradient: 'from-[#654ea3] to-[#eaafc8]'
-    },
+    { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
+    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
+    { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
+    { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
 
   if (!user) {
@@ -62,52 +18,42 @@ const Menu = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#e6e6e6] p-4 font-system">
+    <div className="min-h-screen bg-[#008080] p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white border-2 border-[#a0a0a0] shadow-md">
-          <div className="bg-[#000080] text-white px-4 py-2 flex justify-between items-center">
-            <span className="text-xl font-bold">TrashTok Channels</span>
+        <div className="retro-window">
+          <div className="title-bar flex justify-between items-center">
+            <span>TrashTok Channels</span>
             <span className="text-sm">
               Welcome, {user.email?.split('@')[0]}
             </span>
           </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {channels.map((channel) => (
-                <Link 
-                  key={channel.id}
-                  to={`/chat/${channel.id}`}
-                  className={`
-                    group relative overflow-hidden
-                    border-2 border-gray-300 rounded
-                    bg-gradient-to-r ${channel.gradient}
-                    hover:shadow-lg transition-shadow
-                    p-4
-                  `}
-                >
-                  <div className="flex items-center gap-3 text-white">
-                    <channel.icon className="w-6 h-6" />
-                    <span className="text-lg font-bold tracking-wide">{channel.name}</span>
-                  </div>
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
-                </Link>
-              ))}
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {channels.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <Link 
+                    key={channel.id}
+                    to={`/chat/${channel.id}`}
+                    className="retro-button flex items-center gap-2 p-4 hover:shadow-[inset_1px_1px_#7F7F7F]"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-bold">{channel.name}</div>
+                      <div className="text-sm text-gray-600">{channel.type}</div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
             
             <div className="mt-8">
               <button 
                 onClick={() => signOut()} 
-                className="
-                  w-full px-4 py-2
-                  bg-gradient-to-r from-[#d02618] to-[#ff4b1f]
-                  text-white font-bold
-                  border-2 border-gray-300 rounded
-                  hover:shadow-lg transition-shadow
-                  flex items-center justify-center gap-2
-                "
+                className="retro-button flex items-center gap-2 w-full justify-center"
               >
-                Sign Out
+                <LogOut className="w-5 h-5" />
+                Log Out
               </button>
             </div>
           </div>
