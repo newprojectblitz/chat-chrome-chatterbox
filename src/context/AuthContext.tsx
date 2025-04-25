@@ -29,6 +29,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.email);
+        
+        // Update session and user state
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
@@ -39,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         // If user just signed out, navigate to auth
-        if (!currentSession && event === 'SIGNED_OUT') {
+        if (!currentSession && (event === 'SIGNED_OUT' || event === 'USER_DELETED')) {
           console.log("User signed out, navigating to auth");
           navigate('/auth');
         }
@@ -142,18 +144,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       console.log("Attempting to sign out");
+      
+      // Clear auth state first to prevent UI flickering
+      setUser(null);
+      setSession(null);
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
         throw error;
       }
+      
       console.log("Sign out successful");
-      // Navigation will happen via the auth state change listener
-      
-      // Reset the auth state explicitly
-      setUser(null);
-      setSession(null);
-      
+      // Make sure we navigate to auth page
+      navigate('/auth');
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast.error(error.message || "Failed to sign out");

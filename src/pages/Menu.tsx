@@ -21,13 +21,14 @@ const Menu = () => {
     try {
       console.log("Attempting to sign out from Menu");
       await signOut();
-      // Note: Navigation will now happen via the auth state change listener in AuthContext
+      // Navigation will now happen via the auth state change listener in AuthContext
     } catch (error) {
       console.error("Failed to sign out:", error);
       toast.error("Failed to sign out. Please try again.");
     }
   };
 
+  // Display loading state while authentication is being checked
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
@@ -36,6 +37,7 @@ const Menu = () => {
     );
   }
 
+  // Redirect to auth page if no user is logged in
   if (!user) {
     return <Navigate to="/auth" replace />;
   }

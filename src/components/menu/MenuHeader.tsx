@@ -23,6 +23,7 @@ export const MenuHeader = ({ username, onSignOut, isLoading }: MenuHeaderProps) 
         <button 
           onClick={onSignOut} 
           className="retro-button flex items-center gap-2 flex-1 justify-center"
+          disabled={isLoading}
         >
           <LogOut className="w-5 h-5" />
           {isLoading ? 'Signing Out...' : 'Log Out'}
