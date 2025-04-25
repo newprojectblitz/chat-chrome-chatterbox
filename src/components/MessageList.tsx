@@ -19,43 +19,45 @@ export const MessageList = () => {
       {messages.length === 0 ? (
         <div className="text-center text-gray-500">No messages yet</div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {messages.map((message) => (
-            <div key={message.id} className="flex items-center gap-2">
+            <div key={message.id} className="flex items-start gap-2">
               <span className="font-bold whitespace-nowrap">{message.sender}:</span>
-              <span
-                style={{
-                  fontFamily: message.font === 'comic' ? 'Comic Neue' :
-                            message.font === 'typewriter' ? 'Courier New' :
-                            'system-ui',
-                  color: message.color,
-                  fontWeight: message.isBold ? 'bold' : 'normal',
-                  fontStyle: message.isItalic ? 'italic' : 'normal',
-                  textDecoration: message.isUnderline ? 'underline' : 'none',
-                  fontSize: message.fontSize === 'small' ? '0.875rem' : 
-                           message.fontSize === 'large' ? '1.125rem' : 
-                           '1rem'
-                }}
-                className="flex-1"
-              >
-                {message.text}
-              </span>
-              <div className="flex items-center gap-1">
-                <button 
-                  onClick={() => handleReaction(message.id, 'like')}
-                  className="p-1 hover:bg-gray-200 rounded"
+              <div className="flex flex-1 items-center gap-2">
+                <span
+                  style={{
+                    fontFamily: message.font === 'comic' ? 'Comic Neue' :
+                              message.font === 'typewriter' ? 'Courier New' :
+                              'system-ui',
+                    color: message.color,
+                    fontWeight: message.isBold ? 'bold' : 'normal',
+                    fontStyle: message.isItalic ? 'italic' : 'normal',
+                    textDecoration: message.isUnderline ? 'underline' : 'none',
+                    fontSize: message.fontSize === 'small' ? '0.875rem' : 
+                             message.fontSize === 'large' ? '1.125rem' : 
+                             '1rem'
+                  }}
+                  className="flex-1"
                 >
-                  <ThumbsUp className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => handleReaction(message.id, 'dislike')}
-                  className="p-1 hover:bg-gray-200 rounded"
-                >
-                  <ThumbsDown className="w-4 h-4" />
-                </button>
-                <span className="text-xs text-gray-400">
-                  {new Date(message.timestamp).toLocaleTimeString()}
+                  {message.text}
                 </span>
+                <div className="flex items-center gap-2 ml-2 text-gray-500 text-xs">
+                  <button 
+                    onClick={() => handleReaction(message.id, 'like')}
+                    className="p-1 hover:bg-gray-200 rounded"
+                  >
+                    <ThumbsUp className="w-3 h-3" />
+                  </button>
+                  <button 
+                    onClick={() => handleReaction(message.id, 'dislike')}
+                    className="p-1 hover:bg-gray-200 rounded"
+                  >
+                    <ThumbsDown className="w-3 h-3" />
+                  </button>
+                  <span>
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

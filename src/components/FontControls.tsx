@@ -48,25 +48,25 @@ export const FontControls = ({
       <ToggleGroup type="multiple" className="flex gap-1">
         <ToggleGroupItem
           value="bold"
-          pressed={isBold}
-          onClick={onBoldToggle}
           aria-label="Toggle bold"
+          onClick={onBoldToggle}
+          data-state={isBold ? "on" : "off"}
         >
           <Bold className="h-4 w-4" />
         </ToggleGroupItem>
         <ToggleGroupItem
           value="italic"
-          pressed={isItalic}
-          onClick={onItalicToggle}
           aria-label="Toggle italic"
+          onClick={onItalicToggle}
+          data-state={isItalic ? "on" : "off"}
         >
           <Italic className="h-4 w-4" />
         </ToggleGroupItem>
         <ToggleGroupItem
           value="underline"
-          pressed={isUnderline}
-          onClick={onUnderlineToggle}
           aria-label="Toggle underline"
+          onClick={onUnderlineToggle}
+          data-state={isUnderline ? "on" : "off"}
         >
           <Underline className="h-4 w-4" />
         </ToggleGroupItem>
