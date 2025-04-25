@@ -9,11 +9,183 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      direct_messages: {
+        Row: {
+          color: string | null
+          created_at: string
+          font: string | null
+          font_size: string | null
+          id: string
+          is_bold: boolean | null
+          is_italic: boolean | null
+          is_underline: boolean | null
+          read: boolean | null
+          receiver_id: string
+          sender_id: string
+          text: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          font?: string | null
+          font_size?: string | null
+          id?: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
+          is_underline?: boolean | null
+          read?: boolean | null
+          receiver_id: string
+          sender_id: string
+          text: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          font?: string | null
+          font_size?: string | null
+          id?: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
+          is_underline?: boolean | null
+          read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+          text?: string
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          away_team: string
+          created_at: string
+          end_time: string | null
+          home_team: string
+          id: string
+          score_away: number | null
+          score_home: number | null
+          sport: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          away_team: string
+          created_at?: string
+          end_time?: string | null
+          home_team: string
+          id?: string
+          score_away?: number | null
+          score_home?: number | null
+          sport: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          away_team?: string
+          created_at?: string
+          end_time?: string | null
+          home_team?: string
+          id?: string
+          score_away?: number | null
+          score_home?: number | null
+          sport?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          channel_id: string
+          color: string | null
+          created_at: string
+          font: string | null
+          font_size: string | null
+          game_id: string | null
+          id: string
+          is_bold: boolean | null
+          is_italic: boolean | null
+          is_underline: boolean | null
+          text: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          color?: string | null
+          created_at?: string
+          font?: string | null
+          font_size?: string | null
+          game_id?: string | null
+          id?: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
+          is_underline?: boolean | null
+          text: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          color?: string | null
+          created_at?: string
+          font?: string | null
+          font_size?: string | null
+          game_id?: string | null
+          id?: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
+          is_underline?: boolean | null
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string | null
           id: string
+          is_online: boolean | null
+          mlb_team: string | null
+          nba_team: string | null
+          nfl_team: string | null
+          nhl_team: string | null
           updated_at: string | null
           username: string
         }
@@ -21,6 +193,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           id: string
+          is_online?: boolean | null
+          mlb_team?: string | null
+          nba_team?: string | null
+          nfl_team?: string | null
+          nhl_team?: string | null
           updated_at?: string | null
           username: string
         }
@@ -28,10 +205,47 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           id?: string
+          is_online?: boolean | null
+          mlb_team?: string | null
+          nba_team?: string | null
+          nfl_team?: string | null
+          nhl_team?: string | null
           updated_at?: string | null
           username?: string
         }
         Relationships: []
+      }
+      reactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

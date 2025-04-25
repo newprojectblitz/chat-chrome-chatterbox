@@ -1,17 +1,93 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import { useParams } from 'react-router-dom';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { ChatMessage } from '../types/chat';
 
 export const MessageList = () => {
   const { channelId } = useParams<{ channelId: string }>();
-  const { getChannelMessages, reactToMessage } = useChatContext();
+  const { reactToMessage } = useChatContext();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   
-  const messages = channelId ? getChannelMessages(channelId) : [];
+  useEffect(() => {
+    if (!channelId) return;
 
-  const handleReaction = (messageId: string, reaction: 'like' | 'dislike') => {
-    reactToMessage(messageId, reaction);
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          profiles:user_id (username)
+        `)
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        return;
+      }
+
+      setMessages(data.map(message => ({
+        id: message.id,
+        text: message.text,
+        sender: message.profiles.username,
+        timestamp: new Date(message.created_at).getTime(),
+        font: message.font,
+        color: message.color,
+        fontSize: message.font_size,
+        isBold: message.is_bold,
+        isItalic: message.is_italic,
+        isUnderline: message.is_underline
+      })));
+    };
+
+    fetchMessages();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages',
+          filter: `channel_id=eq.${channelId}`
+        },
+        async (payload) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', payload.new.user_id)
+            .single();
+
+          const newMessage: ChatMessage = {
+            id: payload.new.id,
+            text: payload.new.text,
+            sender: profile?.username || 'Unknown',
+            timestamp: new Date(payload.new.created_at).getTime(),
+            font: payload.new.font,
+            color: payload.new.color,
+            fontSize: payload.new.font_size,
+            isBold: payload.new.is_bold,
+            isItalic: payload.new.is_italic,
+            isUnderline: payload.new.is_underline
+          };
+
+          setMessages(prev => [...prev, newMessage]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [channelId]);
+
+  const handleReaction = async (messageId: string, reaction: 'like' | 'dislike') => {
+    await reactToMessage(messageId, reaction);
   };
 
   return (
