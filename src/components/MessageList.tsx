@@ -12,24 +12,24 @@ export const MessageList = () => {
       ) : (
         <div className="space-y-2">
           {messages.map((message) => (
-            <div key={message.id} className="p-2 retro-inset bg-gray-50">
-              <div className="flex items-center gap-2">
-                <span className="font-bold">{message.sender}:</span>
-                <span className="text-gray-400 text-xs">
-                  {new Date(message.timestamp).toLocaleTimeString()}
+            <div key={message.id} className="flex items-center justify-between gap-2 p-2 retro-inset bg-gray-50">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-bold whitespace-nowrap">{message.sender}:</span>
+                <span
+                  style={{
+                    fontFamily: message.font === 'comic' ? 'Comic Neue' :
+                              message.font === 'typewriter' ? 'Courier New' :
+                              'system-ui',
+                    color: message.color
+                  }}
+                  className="truncate"
+                >
+                  {message.text}
                 </span>
               </div>
-              <div 
-                style={{ 
-                  fontFamily: message.font === 'comic' ? 'Comic Neue' : 
-                            message.font === 'typewriter' ? 'Courier New' : 
-                            'system-ui',
-                  color: message.color 
-                }}
-                className="mt-1"
-              >
-                {message.text}
-              </div>
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                {new Date(message.timestamp).toLocaleTimeString()}
+              </span>
             </div>
           ))}
         </div>
