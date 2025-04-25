@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Menu from "./pages/Menu";
+import Profile from "./pages/Profile";
 import { ChatProvider } from "./context/ChatContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/menu" element={<Menu />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/chat/:channelId" element={<Index />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

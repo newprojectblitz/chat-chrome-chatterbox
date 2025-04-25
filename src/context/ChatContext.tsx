@@ -7,10 +7,13 @@ interface ChatContextType {
   users: ChatUser[];
   activeTab: string;
   currentUser: ChatUser | null;
-  sendMessage: (text: string) => void;
+  sendMessage: (text: string, channelId: string) => void;
   setActiveTab: (tab: string) => void;
   logout: () => void;
   updateUserSettings: (font: string, color: string) => void;
+  getChannelMessages: (channelId: string) => ChatMessage[];
+  reactToMessage: (messageId: string, reaction: 'like' | 'dislike') => void;
+  getTopMessage: (channelId: string) => ChatMessage | null;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -24,7 +27,12 @@ export const useChatContext = () => {
 };
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [channelMessages, setChannelMessages] = useState<Record<string, ChatMessage[]>>({
+    reality1: [],
+    sports1: [],
+    reality2: [],
+    sports2: [],
+  });
   const [users, setUsers] = useState<ChatUser[]>([
     { id: '1', name: 'TrashQueen', font: 'comic', color: '#FF0000', isOnline: true },
     { id: '2', name: 'RealityFan99', font: 'system', color: '#0000FF', isOnline: true },
@@ -32,6 +40,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ]);
   const [activeTab, setActiveTab] = useState('public');
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
+  const [messageReactions, setMessageReactions] = useState<Record<string, { likes: number, dislikes: number }>>({});
 
   useEffect(() => {
     const username = localStorage.getItem('chat-username');
@@ -71,8 +80,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentUser(null);
   };
 
-  const sendMessage = (text: string) => {
-    if (!text.trim() || !currentUser) return;
+  const sendMessage = (text: string, channelId: string) => {
+    if (!text.trim() || !currentUser || !channelId) return;
     
     const newMessage: ChatMessage = {
       id: `msg_${Date.now().toString(36)}`,
@@ -83,19 +92,71 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       color: currentUser.color,
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setChannelMessages(prev => ({
+      ...prev,
+      [channelId]: [...(prev[channelId as keyof typeof prev] || []), newMessage]
+    }));
+    
+    // Initialize reactions for the new message
+    setMessageReactions(prev => ({
+      ...prev,
+      [newMessage.id]: { likes: 0, dislikes: 0 }
+    }));
+  };
+
+  const getChannelMessages = (channelId: string): ChatMessage[] => {
+    return channelMessages[channelId as keyof typeof channelMessages] || [];
+  };
+
+  const reactToMessage = (messageId: string, reaction: 'like' | 'dislike') => {
+    setMessageReactions(prev => {
+      const currentReactions = prev[messageId] || { likes: 0, dislikes: 0 };
+      return {
+        ...prev,
+        [messageId]: {
+          ...currentReactions,
+          [reaction]: currentReactions[reaction] + 1
+        }
+      };
+    });
+  };
+
+  const getTopMessage = (channelId: string): ChatMessage | null => {
+    const messages = getChannelMessages(channelId);
+    if (messages.length === 0) return null;
+    
+    let topMessageId = '';
+    let maxLikes = -1;
+    
+    Object.entries(messageReactions).forEach(([messageId, reactions]) => {
+      // Check if this message belongs to the current channel
+      const messageInChannel = messages.some(msg => msg.id === messageId);
+      if (messageInChannel && reactions.likes > maxLikes) {
+        maxLikes = reactions.likes;
+        topMessageId = messageId;
+      }
+    });
+    
+    if (topMessageId && maxLikes > 0) {
+      return messages.find(msg => msg.id === topMessageId) || null;
+    }
+    
+    return null;
   };
 
   return (
     <ChatContext.Provider value={{ 
-      messages, 
+      messages: [], // Keep this for backward compatibility
       users, 
       activeTab, 
       currentUser,
       sendMessage, 
       setActiveTab,
       logout,
-      updateUserSettings
+      updateUserSettings,
+      getChannelMessages,
+      reactToMessage,
+      getTopMessage
     }}>
       {children}
     </ChatContext.Provider>

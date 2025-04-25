@@ -1,6 +1,6 @@
 
 import { Link, Navigate } from 'react-router-dom';
-import { Volleyball, Tv, Award, Trophy, LogOut } from 'lucide-react';
+import { Volleyball, Tv, Award, Trophy, LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Menu = () => {
@@ -47,10 +47,18 @@ const Menu = () => {
               })}
             </div>
             
-            <div className="mt-8">
+            <div className="mt-8 flex gap-2">
+              <Link 
+                to="/profile" 
+                className="retro-button flex items-center gap-2 flex-1 justify-center"
+              >
+                <UserCircle className="w-5 h-5" />
+                My Profile
+              </Link>
+              
               <button 
                 onClick={() => signOut()} 
-                className="retro-button flex items-center gap-2 w-full justify-center"
+                className="retro-button flex items-center gap-2 flex-1 justify-center"
               >
                 <LogOut className="w-5 h-5" />
                 Log Out

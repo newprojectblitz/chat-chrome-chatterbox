@@ -1,39 +1,31 @@
 
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useChatContext } from '../context/ChatContext';
+import { useParams } from 'react-router-dom';
 
 export const ChatInput = () => {
   const [message, setMessage] = useState('');
   const { sendMessage } = useChatContext();
+  const { channelId } = useParams<{ channelId: string }>();
 
-  const handleSend = () => {
-    if (!message.trim()) return;
-    sendMessage(message);
-    setMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSend();
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (message.trim() && channelId) {
+      sendMessage(message, channelId);
+      setMessage('');
     }
   };
 
   return (
-    <div className="flex gap-2">
-      <input 
-        type="text" 
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <input
+        type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
-        className="flex-1 retro-button p-2"
+        className="retro-inset w-full p-2"
         placeholder="Type your message..."
       />
-      <button 
-        onClick={handleSend} 
-        className="retro-button px-4 py-2"
-      >
-        Send
-      </button>
-    </div>
+      <button type="submit" className="retro-button px-4">Send</button>
+    </form>
   );
 };
