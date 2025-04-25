@@ -5,20 +5,29 @@ import { UserRoster } from './UserRoster';
 import { ChatInput } from './ChatInput';
 import { TopTrashTicker } from './TopTrashTicker';
 import { Settings } from './Settings';
-import { Users } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import { ChatProvider } from '../context/ChatContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export const ChatWindow = () => {
   const [activeTab, setActiveTab] = useState('public');
   const { channelId } = useParams();
+  const navigate = useNavigate();
   
   return (
     <ChatProvider>
       <div className="max-w-6xl mx-auto h-[80vh] my-8">
         <div className="retro-window h-full flex flex-col">
           <div className="title-bar flex items-center justify-between">
-            <span>TrashTok Chat - {channelId}</span>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => navigate('/menu')} 
+                className="bg-transparent border-none text-white flex items-center"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+              </button>
+              <span>TrashTok Chat - {channelId}</span>
+            </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span>37 people here</span>

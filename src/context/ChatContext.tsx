@@ -31,8 +31,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeTab, setActiveTab] = useState('public');
   const [userId] = useState(`user_${Date.now().toString(36)}`);
   
-  // Load saved settings
+  // Load saved settings and username
   useEffect(() => {
+    // Load username
+    const username = localStorage.getItem('chat-username');
+    
+    // Load settings
     const savedSettings = localStorage.getItem('chat-settings');
     if (savedSettings) {
       try {
@@ -62,11 +66,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
+    // Get username from localStorage
+    const username = localStorage.getItem('chat-username') || `User_${userId.slice(-4)}`;
+
     const newMessage: ChatMessage = {
       id: `msg_${Date.now().toString(36)}`,
       text,
       timestamp: Date.now(),
-      sender: `User_${userId.slice(-4)}`,
+      sender: username,
       font,
       color,
     };

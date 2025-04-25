@@ -12,7 +12,7 @@ export const MessageList = () => {
       ) : (
         <div className="space-y-2">
           {messages.map((message) => (
-            <div key={message.id} className="flex items-center justify-between gap-2 p-2 retro-inset bg-gray-50">
+            <div key={message.id} className="flex items-center justify-between gap-2 p-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="font-bold whitespace-nowrap">{message.sender}:</span>
                 <span

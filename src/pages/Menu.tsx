@@ -1,14 +1,22 @@
 
-import { Link } from 'react-router-dom';
-import { Tv } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Basketball, Tv, Award, Trophy, LogOut } from 'lucide-react';
 
 const Menu = () => {
+  const navigate = useNavigate();
+  const username = localStorage.getItem('chat-username') || 'Guest';
+
   const channels = [
-    { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV' },
-    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports' },
-    { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV' },
-    { id: 'sports2', name: 'Premier League Chat', type: 'Sports' },
+    { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
+    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Basketball },
+    { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
+    { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('chat-username');
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-[#008080] p-4">
@@ -17,24 +25,37 @@ const Menu = () => {
           <div className="title-bar flex justify-between items-center">
             <span>TrashTok Channels</span>
             <span className="text-sm">
-              Welcome, {localStorage.getItem('chat-username') || 'Guest'}
+              Welcome, {username}
             </span>
           </div>
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {channels.map((channel) => (
-                <Link 
-                  key={channel.id}
-                  to={`/chat/${channel.id}`}
-                  className="retro-button flex items-center gap-2 p-4 hover:shadow-[inset_1px_1px_#7F7F7F]"
-                >
-                  <Tv className="w-5 h-5" />
-                  <div className="text-left">
-                    <div className="font-bold">{channel.name}</div>
-                    <div className="text-sm text-gray-600">{channel.type}</div>
-                  </div>
-                </Link>
-              ))}
+              {channels.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <Link 
+                    key={channel.id}
+                    to={`/chat/${channel.id}`}
+                    className="retro-button flex items-center gap-2 p-4 hover:shadow-[inset_1px_1px_#7F7F7F]"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-bold">{channel.name}</div>
+                      <div className="text-sm text-gray-600">{channel.type}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            
+            <div className="mt-8">
+              <button 
+                onClick={handleLogout} 
+                className="retro-button flex items-center gap-2 w-full justify-center"
+              >
+                <LogOut className="w-5 h-5" />
+                Log Out
+              </button>
             </div>
           </div>
         </div>

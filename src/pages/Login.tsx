@@ -9,7 +9,7 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {
-      localStorage.setItem('chat-username', username);
+      localStorage.setItem('chat-username', username.trim());
       navigate('/menu');
     }
   };
