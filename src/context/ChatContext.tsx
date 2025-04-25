@@ -10,6 +10,7 @@ interface ChatContextType {
   sendMessage: (text: string) => void;
   setActiveTab: (tab: string) => void;
   logout: () => void;
+  updateUserSettings: (font: string, color: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -48,6 +49,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const updateUserSettings = (font: string, color: string) => {
+    if (currentUser) {
+      const updatedUser = { 
+        ...currentUser, 
+        font, 
+        color 
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('chat-settings', JSON.stringify({ font, color }));
+      
+      // Update current user
+      setCurrentUser(updatedUser);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('chat-username');
     localStorage.removeItem('chat-settings');
@@ -77,7 +94,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       currentUser,
       sendMessage, 
       setActiveTab,
-      logout 
+      logout,
+      updateUserSettings
     }}>
       {children}
     </ChatContext.Provider>

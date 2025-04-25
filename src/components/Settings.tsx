@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useChatContext } from '../context/ChatContext';
 
 const fonts = [
   { id: 'system', label: 'System Sans', className: 'font-system' },
@@ -10,20 +11,19 @@ const fonts = [
 ];
 
 export const Settings = ({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) => {
+  const { currentUser, updateUserSettings } = useChatContext();
   const [font, setFont] = useState('system');
   const [color, setColor] = useState('#000000');
 
   useEffect(() => {
-    const savedSettings = localStorage.getItem('chat-settings');
-    if (savedSettings) {
-      const { font: savedFont, color: savedColor } = JSON.parse(savedSettings);
-      setFont(savedFont);
-      setColor(savedColor);
+    if (currentUser) {
+      setFont(currentUser.font);
+      setColor(currentUser.color);
     }
-  }, []);
+  }, [currentUser]);
 
   const saveSettings = (newFont: string, newColor: string) => {
-    localStorage.setItem('chat-settings', JSON.stringify({ font: newFont, color: newColor }));
+    updateUserSettings(newFont, newColor);
     setFont(newFont);
     setColor(newColor);
   };
