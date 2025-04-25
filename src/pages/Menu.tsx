@@ -1,7 +1,6 @@
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useChatContext } from '../context/ChatContext';
-import { Basketball, Tv, Award, Trophy, LogOut } from 'lucide-react';
+import { Volleyball, Tv, Award, Trophy, LogOut } from 'lucide-react';
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -9,7 +8,7 @@ const Menu = () => {
   
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
-    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Basketball },
+    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
     { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
     { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
