@@ -7,4 +7,11 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://qjeyvwvydtcckijaxpap.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqZXl2d3Z5ZHRjY2tpamF4cGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2MDE4NjIsImV4cCI6MjA2MTE3Nzg2Mn0.M5FukVqFpzXI1gNhVy6F8EFyW69cqlrHh8cqiOadr2o";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
+

@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Volleyball, Tv, Award, Trophy } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -7,7 +8,14 @@ import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  const { user, signOut, isLoading } = useAuth();
+  const { user, signOut, isLoading, session } = useAuth();
+
+  // Add console logs to help debug the authentication flow
+  useEffect(() => {
+    console.log("Menu page: user state:", user ? "Logged in" : "Not logged in");
+    console.log("Menu page: session state:", session ? "Active" : "None");
+    console.log("Menu page: loading state:", isLoading);
+  }, [user, session, isLoading]);
 
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
@@ -31,13 +39,14 @@ const Menu = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
-        <div className="text-white text-lg">Loading...</div>
+        <div className="text-white text-lg">Loading menu...</div>
       </div>
     );
   }
 
   // Redirect to auth page if no user is logged in
-  if (!user) {
+  if (!user || !session) {
+    console.log("Menu page: Not logged in, redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
 

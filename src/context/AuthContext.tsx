@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -22,38 +22,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Fix: Only navigate when session changes, not on every render
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // First initialize: Get the current session
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error fetching session:", error);
+          return;
+        }
+        
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        
+        if (data.session?.user && location.pathname === '/auth') {
+          console.log("Initial auth check: User is logged in, navigating to menu");
+          navigate('/menu');
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Then set up the listener for future auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log("Auth state changed:", event);
+        console.log("Auth state changed:", event, "User:", currentSession?.user?.email);
+        
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        if (currentSession && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          console.log("User signed in, navigating to menu");
-          navigate('/menu');
+        // Only navigate if we're on specific paths and the event requires navigation
+        if (currentSession && event === 'SIGNED_IN') {
+          // Avoid navigation loops by checking current path
+          if (location.pathname === '/auth') {
+            console.log("User signed in, navigating to menu");
+            navigate('/menu');
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log("User signed out, navigating to auth");
           navigate('/auth');
         }
-
-        setIsLoading(false);
       }
     );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const signInWithCredentials = async (identifier: string, password: string) => {
     try {
@@ -118,9 +143,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-      setUser(null);
-      setSession(null);
     } catch (error: any) {
       toast.error(error.message || "Failed to sign out");
       throw error;
