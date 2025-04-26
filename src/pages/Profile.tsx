@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -105,8 +106,7 @@ const Profile = () => {
     }
     
     try {
-      setLoading(true);
-      console.log('Updating password...');
+      // Using loading state from the hook instead of setLoading
       const { error } = await supabase.auth.updateUser({ 
         password: passwordReset.newPassword 
       });
@@ -123,8 +123,6 @@ const Profile = () => {
     } catch (error) {
       console.error('Error updating password:', error);
       toast.error(error instanceof Error ? error.message : "An error occurred while updating your password");
-    } finally {
-      setLoading(false);
     }
   };
 
