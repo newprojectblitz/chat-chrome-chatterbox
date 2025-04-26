@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/sonner';
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { FanPreferences } from '@/components/profile/FanPreferences';
 import { TextPreview } from '@/components/profile/TextPreview';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Onboarding = () => {
   const { user, profile, updateProfile } = useAuth();

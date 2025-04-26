@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { UserProfile, UserRole } from '@/types/auth';
@@ -25,7 +24,6 @@ export async function signIn(email: string, password: string): Promise<{
 
 export async function signUp(email: string, password: string, username: string): Promise<{ error: Error | null }> {
   try {
-    // Check if username exists
     const { data: existingUser, error: usernameCheckError } = await supabase
       .from('profiles')
       .select('username')
@@ -126,16 +124,32 @@ export async function fetchUserProfile(userId: string): Promise<{
     
     if (error) throw error;
     
-    return { 
-      profile: data as UserProfile, 
-      error: null 
+    const profile: UserProfile = {
+      id: data.id,
+      username: data.username,
+      avatar_url: data.avatar_url,
+      bio: data.bio || null,
+      font: data.font,
+      color: data.color,
+      font_size: data.font_size,
+      is_bold: data.is_bold,
+      is_italic: data.is_italic,
+      is_underline: data.is_underline,
+      nba_team: data.nba_team,
+      nhl_team: data.nhl_team,
+      mlb_team: data.mlb_team,
+      nfl_team: data.nfl_team,
+      role: (data.role as UserRole) || 'member',
+      is_onboarded: data.is_onboarded || false,
+      email_verified: data.email_verified || false,
+      is_online: data.is_online,
+      created_at: data.created_at
     };
+    
+    return { profile, error: null };
   } catch (error) {
     console.error("Fetch profile error:", error);
-    return { 
-      profile: null, 
-      error: error as Error 
-    };
+    return { profile: null, error: error as Error };
   }
 }
 
@@ -158,7 +172,6 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 export function handleAuthError(error: Error | null): string {
   if (!error) return '';
   
-  // Map Supabase error messages to user-friendly messages
   const errorMessage = error.message.toLowerCase();
   
   if (errorMessage.includes('email already in use')) {

@@ -26,9 +26,11 @@ export interface UserProfile {
   nhl_team: string | null;
   mlb_team: string | null;
   nfl_team: string | null;
-  role: UserRole;
-  is_onboarded: boolean;
-  email_verified: boolean;
+  role?: UserRole; // Made optional
+  is_onboarded?: boolean; // Made optional
+  email_verified?: boolean; // Made optional
+  created_at?: string; // Added missing field
+  is_online?: boolean; // Added missing field
 }
 
 export interface AuthContextType extends AuthState {
