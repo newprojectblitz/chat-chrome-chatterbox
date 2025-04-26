@@ -7,24 +7,8 @@ import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  // Try-catch block to safely access auth context
-  let user = null;
-  let signOut = async () => {
-    toast.error("Authentication context not available");
-  };
-  let isLoading = true;
+  const { user, signOut, isLoading } = useAuth();
 
-  try {
-    const auth = useAuth();
-    user = auth.user;
-    signOut = auth.signOut;
-    isLoading = auth.isLoading;
-  } catch (error) {
-    console.error("Auth context error:", error);
-    // If auth context fails, redirect to auth page
-    return <Navigate to="/auth" replace />;
-  }
-  
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
     { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
@@ -35,7 +19,6 @@ const Menu = () => {
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
-      console.log("Attempting to sign out from Menu");
       await signOut();
       // Navigation will happen via the auth state change listener
     } catch (error) {
@@ -55,7 +38,6 @@ const Menu = () => {
 
   // Redirect to auth page if no user is logged in
   if (!user) {
-    console.log("No user found, redirecting to auth");
     return <Navigate to="/auth" replace />;
   }
 
