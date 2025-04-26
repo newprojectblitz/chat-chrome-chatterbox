@@ -8,6 +8,8 @@ export const ChatInput = () => {
   const [message, setMessage] = useState('');
   const { sendMessage, currentUser } = useChatContext();
   const { channelId } = useParams<{ channelId: string }>();
+  
+  // Initialize state with values from currentUser or defaults
   const [isBold, setIsBold] = useState(currentUser?.isBold || false);
   const [isItalic, setIsItalic] = useState(currentUser?.isItalic || false);
   const [isUnderline, setIsUnderline] = useState(currentUser?.isUnderline || false);

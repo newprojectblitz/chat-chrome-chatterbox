@@ -225,6 +225,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase
       .from('profiles')
       .update({
+        font,
+        color,
+        font_size: fontSize,
+        is_bold: isBold,
+        is_italic: isItalic,
+        is_underline: isUnderline,
         nba_team: nbaTeam,
         nhl_team: nhlTeam,
         mlb_team: mlbTeam,

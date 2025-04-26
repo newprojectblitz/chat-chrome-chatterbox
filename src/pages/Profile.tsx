@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatContext } from '@/context/ChatContext';
@@ -20,6 +19,7 @@ const Profile = () => {
   const { toast: uiToast } = useToast();
   const navigate = useNavigate();
 
+  // Add new state variables for text styling
   const [username, setUsername] = useState('');
   const [font, setFont] = useState(currentUser?.font || 'system');
   const [fontSize, setFontSize] = useState(currentUser?.fontSize || 'regular');

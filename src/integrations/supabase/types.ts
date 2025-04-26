@@ -179,9 +179,15 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          color: string | null
           created_at: string | null
+          font: string | null
+          font_size: string | null
           id: string
+          is_bold: boolean | null
+          is_italic: boolean | null
           is_online: boolean | null
+          is_underline: boolean | null
           mlb_team: string | null
           nba_team: string | null
           nfl_team: string | null
@@ -191,9 +197,15 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          color?: string | null
           created_at?: string | null
+          font?: string | null
+          font_size?: string | null
           id: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
           is_online?: boolean | null
+          is_underline?: boolean | null
           mlb_team?: string | null
           nba_team?: string | null
           nfl_team?: string | null
@@ -203,9 +215,15 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          color?: string | null
           created_at?: string | null
+          font?: string | null
+          font_size?: string | null
           id?: string
+          is_bold?: boolean | null
+          is_italic?: boolean | null
           is_online?: boolean | null
+          is_underline?: boolean | null
           mlb_team?: string | null
           nba_team?: string | null
           nfl_team?: string | null
