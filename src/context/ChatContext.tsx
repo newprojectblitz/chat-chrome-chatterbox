@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage, ChatUser } from '../types/chat';
@@ -85,7 +84,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { event: '*', schema: 'public', table: 'messages' },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
-            // Fetch the username for this user
             const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('username')
@@ -176,7 +174,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [];
     }
 
-    // Fetch user profiles separately to get usernames
     const userIds = [...new Set(data.map(message => message.user_id))];
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
@@ -188,7 +185,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [];
     }
 
-    // Create a lookup for usernames by user_id
     const usernameLookup = profiles.reduce((acc: Record<string, string>, profile) => {
       acc[profile.id] = profile.username;
       return acc;
@@ -265,7 +261,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <ChatContext.Provider value={{
-      messages: [],
+      messages: channelMessages[activeTab] || [],
       users,
       activeTab,
       currentUser,
