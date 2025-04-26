@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { UserProfile, UserRole } from '@/types/auth';
@@ -124,11 +125,12 @@ export async function fetchUserProfile(userId: string): Promise<{
     
     if (error) throw error;
     
+    // Create a UserProfile object with default values for missing properties
     const profile: UserProfile = {
       id: data.id,
       username: data.username,
       avatar_url: data.avatar_url,
-      bio: data.bio || null,
+      bio: null, // Default value since it might not exist in the database
       font: data.font,
       color: data.color,
       font_size: data.font_size,
@@ -139,9 +141,9 @@ export async function fetchUserProfile(userId: string): Promise<{
       nhl_team: data.nhl_team,
       mlb_team: data.mlb_team,
       nfl_team: data.nfl_team,
-      role: (data.role as UserRole) || 'member',
-      is_onboarded: data.is_onboarded || false,
-      email_verified: data.email_verified || false,
+      role: 'member', // Default role if not present
+      is_onboarded: false, // Default value
+      email_verified: false, // Default value
       is_online: data.is_online,
       created_at: data.created_at
     };
