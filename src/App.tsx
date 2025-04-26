@@ -10,8 +10,10 @@ import Auth from "./pages/Auth";
 import Menu from "./pages/Menu";
 import Profile from "./pages/Profile";
 import DirectMessages from "./pages/DirectMessages";
+import Onboarding from "./pages/Onboarding";
 import { ChatProvider } from "@/context/ChatContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,10 +35,56 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Navigate to="/auth" replace />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/menu" element={<Menu />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/chat/:channelId" element={<Index />} />
-                <Route path="/direct-messages/:friendId" element={<DirectMessages />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                
+                {/* Protected routes for authenticated members */}
+                <Route 
+                  path="/menu" 
+                  element={
+                    <RequireAuth allowedRoles={['member', 'moderator', 'admin']}>
+                      <Menu />
+                    </RequireAuth>
+                  } 
+                />
+                
+                <Route 
+                  path="/profile" 
+                  element={
+                    <RequireAuth allowedRoles={['member', 'moderator', 'admin']}>
+                      <Profile />
+                    </RequireAuth>
+                  } 
+                />
+                
+                <Route 
+                  path="/chat/:channelId" 
+                  element={
+                    <RequireAuth allowedRoles={['member', 'moderator', 'admin']}>
+                      <Index />
+                    </RequireAuth>
+                  } 
+                />
+                
+                <Route 
+                  path="/direct-messages/:friendId" 
+                  element={
+                    <RequireAuth allowedRoles={['member', 'moderator', 'admin']}>
+                      <DirectMessages />
+                    </RequireAuth>
+                  } 
+                />
+                
+                {/* Admin routes */}
+                <Route 
+                  path="/admin/*" 
+                  element={
+                    <RequireAuth allowedRoles={['admin']}>
+                      {/* We'll implement the admin layout later */}
+                      <div>Admin Dashboard</div>
+                    </RequireAuth>
+                  } 
+                />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </TooltipProvider>

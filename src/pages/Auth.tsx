@@ -11,30 +11,55 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const location = useLocation();
+  const { user, session, isLoading, signIn, signInWithGoogle, signUp, resetPassword } = useAuth();
   
-  const { user, session, isLoading, signInWithCredentials, signInWithGoogle, signUp } = useAuth();
-
   // Check for password reset confirmation
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    if (query.get('reset') === 'true') {
+    const queryParams = new URLSearchParams(location.search);
+    
+    // Handle password reset flow
+    if (queryParams.get('reset') === 'true') {
       toast.success("Password has been reset. Please sign in with your new password.");
     }
-  }, [location]);
-
+    
+    // Handle email verification flow
+    if (queryParams.get('verification') === 'success') {
+      toast.success("Email verified successfully! You can now sign in.");
+    }
+  }, [location.search]);
+  
   // Add console logs to help debug the authentication flow
   useEffect(() => {
     console.log("Auth page: user state:", user ? "Logged in" : "Not logged in");
     console.log("Auth page: session state:", session ? "Active" : "None");
     console.log("Auth page: loading state:", isLoading);
   }, [user, session, isLoading]);
-
+  
+  // Handle sign in
+  const handleSignIn = async (email: string, password: string) => {
+    await signIn(email, password);
+  };
+  
+  // Handle sign up
+  const handleSignUp = async (email: string, password: string, username: string) => {
+    await signUp(email, password, username);
+  };
+  
+  // Handle password reset
+  const handlePasswordReset = async (email: string) => {
+    await resetPassword(email);
+    setIsForgotPassword(false);
+    toast.success("Password reset email sent. Please check your inbox.");
+  };
+  
   // Redirect to menu if user is already logged in
   if (user && session) {
-    console.log("Auth page: Redirecting to /menu");
-    return <Navigate to="/menu" replace />;
+    // Get the intended destination from location state or default to /menu
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/menu';
+    console.log("Auth page: Redirecting to", from);
+    return <Navigate to={from} replace />;
   }
-
+  
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -43,7 +68,7 @@ const Auth = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-[#008080] p-4">
       <div className="max-w-md mx-auto mt-20">
@@ -61,19 +86,20 @@ const Auth = () => {
             <PasswordResetForm
               onBack={() => setIsForgotPassword(false)}
               isLoading={isLoading}
+              onSubmit={handlePasswordReset}
             />
           ) : isLogin ? (
             <LoginForm
               onForgotPassword={() => setIsForgotPassword(true)}
               onToggleMode={() => setIsLogin(false)}
-              onSignIn={signInWithCredentials}
+              onSignIn={handleSignIn}
               onGoogleSignIn={signInWithGoogle}
               isLoading={isLoading}
             />
           ) : (
             <SignUpForm
               onToggleMode={() => setIsLogin(true)}
-              onSignUp={signUp}
+              onSignUp={handleSignUp}
               onGoogleSignIn={signInWithGoogle}
               isLoading={isLoading}
             />

@@ -8,82 +8,67 @@ import { MenuHeader } from '@/components/menu/MenuHeader';
 import { ChannelList } from '@/components/menu/ChannelList';
 
 const Menu = () => {
-  // Use try-catch to safely access the auth context
-  try {
-    const { user, signOut, isLoading, session } = useAuth();
+  const { user, signOut, isLoading, session, profile } = useAuth();
 
-    // Add console logs to help debug the authentication flow
-    useEffect(() => {
-      console.log("Menu page: user state:", user ? "Logged in" : "Not logged in");
-      console.log("Menu page: session state:", session ? "Active" : "None");
-      console.log("Menu page: loading state:", isLoading);
-    }, [user, session, isLoading]);
+  // Add console logs to help debug the authentication flow
+  useEffect(() => {
+    console.log("Menu page: user state:", user ? "Logged in" : "Not logged in");
+    console.log("Menu page: session state:", session ? "Active" : "None");
+    console.log("Menu page: loading state:", isLoading);
+    console.log("Menu page: profile:", profile);
+  }, [user, session, isLoading, profile]);
 
-    const channels = [
-      { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
-      { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
-      { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
-      { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
-    ];
+  const channels = [
+    { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
+    { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
+    { id: 'reality2', name: 'Survivor Discussion', type: 'Reality TV', icon: Tv },
+    { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
+  ];
 
-    const handleSignOut = async (e: React.MouseEvent) => {
-      e.preventDefault();
-      try {
-        await signOut();
-        // Navigation will happen via the auth state change listener
-      } catch (error) {
-        console.error("Failed to sign out:", error);
-        toast.error("Failed to sign out. Please try again.");
-      }
-    };
-
-    // Display loading state while checking authentication
-    if (isLoading) {
-      return (
-        <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
-          <div className="text-white text-lg">Loading menu...</div>
-        </div>
-      );
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await signOut();
+      // Navigation will happen via the auth state change listener
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+      toast.error("Failed to sign out. Please try again.");
     }
+  };
 
-    // Redirect to auth page if no user is logged in
-    if (!user || !session) {
-      console.log("Menu page: Not logged in, redirecting to /auth");
-      return <Navigate to="/auth" replace />;
-    }
-
-    return (
-      <div className="min-h-screen bg-[#008080] p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="retro-window">
-            <div className="title-bar flex justify-between items-center">
-              <span>TrashTok Channels</span>
-              <span className="text-sm">
-                Welcome, {user.email?.split('@')[0]}
-              </span>
-            </div>
-            <div className="p-4">
-              <ChannelList channels={channels} />
-              <MenuHeader 
-                username={user.email?.split('@')[0] || ''}
-                onSignOut={handleSignOut}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-
-  } catch (error) {
-    // If the auth context isn't available, show a fallback loading state
-    console.error("Auth context error:", error);
+  // Display loading state while checking authentication
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
-        <div className="text-white text-lg">Initializing authentication...</div>
+        <div className="text-white text-lg">Loading menu...</div>
       </div>
     );
   }
+
+  // We don't need to check for user authentication here anymore since RequireAuth handles it
+
+  return (
+    <div className="min-h-screen bg-[#008080] p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="retro-window">
+          <div className="title-bar flex justify-between items-center">
+            <span>TrashTok Channels</span>
+            <span className="text-sm">
+              Welcome, {profile?.username || user?.email?.split('@')[0]}
+            </span>
+          </div>
+          <div className="p-4">
+            <ChannelList channels={channels} />
+            <MenuHeader 
+              username={profile?.username || user?.email?.split('@')[0] || ''}
+              onSignOut={handleSignOut}
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Menu;

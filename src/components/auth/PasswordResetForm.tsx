@@ -1,42 +1,36 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
 
 interface PasswordResetFormProps {
   onBack: () => void;
+  onSubmit: (email: string) => Promise<void>;
   isLoading: boolean;
 }
 
-export const PasswordResetForm = ({ onBack, isLoading }: PasswordResetFormProps) => {
+export const PasswordResetForm = ({ onBack, onSubmit, isLoading }: PasswordResetFormProps) => {
   const [resetEmail, setResetEmail] = useState('');
-  const { toast } = useToast();
+  const [error, setError] = useState('');
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
+    if (!resetEmail.trim()) {
+      setError('Email is required');
+      return;
+    }
+    
     try {
-      console.log('Attempting password reset for:', resetEmail);
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Password reset email sent",
-        description: "Check your email for the password reset link.",
-      });
-      onBack();
+      await onSubmit(resetEmail);
     } catch (error) {
-      console.error('Password reset error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
-      });
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
@@ -49,8 +43,10 @@ export const PasswordResetForm = ({ onBack, isLoading }: PasswordResetFormProps)
           type="email"
           value={resetEmail}
           onChange={(e) => setResetEmail(e.target.value)}
+          className={error ? 'border-red-500' : ''}
           required
         />
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
       <Button type="submit" className="w-full retro-button" disabled={isLoading}>
         {isLoading ? 'Sending...' : 'Send Reset Link'}
