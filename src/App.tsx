@@ -10,8 +10,8 @@ import Auth from "./pages/Auth";
 import Menu from "./pages/Menu";
 import Profile from "./pages/Profile";
 import DirectMessages from "./pages/DirectMessages";
-import { ChatProvider } from "./context/ChatContext";
-import { AuthProvider } from "./context/AuthContext";
+import { ChatProvider } from "@/context/ChatContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
