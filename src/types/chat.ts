@@ -6,10 +6,6 @@ export interface ChatMessage {
   sender: string;
   font: string;
   color: string;
-  fontSize?: string;
-  isBold?: boolean;
-  isItalic?: boolean;
-  isUnderline?: boolean;
 }
 
 export interface ChatUser {
@@ -17,13 +13,5 @@ export interface ChatUser {
   name: string;
   font: string;
   color: string;
-  fontSize?: string;
-  isBold?: boolean;
-  isItalic?: boolean;
-  isUnderline?: boolean;
-  nbaTeam?: string;
-  nhlTeam?: string;
-  mlbTeam?: string;
-  nflTeam?: string;
   isOnline: boolean;
 }

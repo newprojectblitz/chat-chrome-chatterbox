@@ -1,23 +1,11 @@
-
-import { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Volleyball, Tv, Award, Trophy } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/components/ui/sonner';
-import { MenuHeader } from '@/components/menu/MenuHeader';
-import { ChannelList } from '@/components/menu/ChannelList';
+import { Link, useNavigate } from 'react-router-dom';
+import { useChatContext } from '../context/ChatContext';
+import { Volleyball, Tv, Award, Trophy, LogOut } from 'lucide-react';
 
 const Menu = () => {
-  const { user, signOut, isLoading, session, profile } = useAuth();
-
-  // Add console logs to help debug the authentication flow
-  useEffect(() => {
-    console.log("Menu page: user state:", user ? "Logged in" : "Not logged in");
-    console.log("Menu page: session state:", session ? "Active" : "None");
-    console.log("Menu page: loading state:", isLoading);
-    console.log("Menu page: profile:", profile);
-  }, [user, session, isLoading, profile]);
-
+  const navigate = useNavigate();
+  const { currentUser, logout } = useChatContext();
+  
   const channels = [
     { id: 'reality1', name: 'The Bachelor Live', type: 'Reality TV', icon: Award },
     { id: 'sports1', name: 'NBA Finals Game 1', type: 'Sports', icon: Volleyball },
@@ -25,27 +13,15 @@ const Menu = () => {
     { id: 'sports2', name: 'Premier League Chat', type: 'Sports', icon: Trophy },
   ];
 
-  const handleSignOut = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    try {
-      await signOut();
-      // Navigation will happen via the auth state change listener
-    } catch (error) {
-      console.error("Failed to sign out:", error);
-      toast.error("Failed to sign out. Please try again.");
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
-  // Display loading state while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#008080] p-4 flex items-center justify-center">
-        <div className="text-white text-lg">Loading menu...</div>
-      </div>
-    );
+  if (!currentUser) {
+    navigate('/');
+    return null;
   }
-
-  // We don't need to check for user authentication here anymore since RequireAuth handles it
 
   return (
     <div className="min-h-screen bg-[#008080] p-4">
@@ -54,16 +30,38 @@ const Menu = () => {
           <div className="title-bar flex justify-between items-center">
             <span>TrashTok Channels</span>
             <span className="text-sm">
-              Welcome, {profile?.username || user?.email?.split('@')[0]}
+              Welcome, {currentUser.name}
             </span>
           </div>
           <div className="p-4">
-            <ChannelList channels={channels} />
-            <MenuHeader 
-              username={profile?.username || user?.email?.split('@')[0] || ''}
-              onSignOut={handleSignOut}
-              isLoading={isLoading}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {channels.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <Link 
+                    key={channel.id}
+                    to={`/chat/${channel.id}`}
+                    className="retro-button flex items-center gap-2 p-4 hover:shadow-[inset_1px_1px_#7F7F7F]"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-bold">{channel.name}</div>
+                      <div className="text-sm text-gray-600">{channel.type}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            
+            <div className="mt-8">
+              <button 
+                onClick={handleLogout} 
+                className="retro-button flex items-center gap-2 w-full justify-center"
+              >
+                <LogOut className="w-5 h-5" />
+                Log Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
